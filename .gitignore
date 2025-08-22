@@ -1,0 +1,304 @@
+# Virtual Environments
+venv/
+ai_venv/
+env/
+ENV/
+.venv/
+.env/
+virtualenv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# AI Models and Large Files
+*.bin
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.tflite
+*.pb
+*.h5
+*.hdf5
+*.model
+*.weights
+*.pkl
+*.pickle
+*.joblib
+*.npy
+*.npz
+*.parquet
+*.feather
+*.arrow
+
+# Model directories
+models/
+pretrained_models/
+checkpoints/
+weights/
+saved_models/
+model_cache/
+.cache/
+.triton/
+.ollama/
+
+# Hugging Face
+.cache/huggingface/
+transformers_cache/
+tokenizers_cache/
+
+# Audio files (usually large)
+*.wav
+*.mp3
+*.flac
+*.aac
+*.ogg
+*.m4a
+*.wma
+Audios/
+temp_audio/
+
+# Video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+
+# Image files (if not needed for code)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.svg
+*.ico
+
+# Data files
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.json
+*.xml
+*.yaml
+*.yml
+data/
+datasets/
+raw_data/
+processed_data/
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+log/
+
+# Output directories
+outputs/
+results/
+temp/
+tmp/
+uploads/
+downloads/
+
+# IDE and Editor files
+.vscode/
+.vscode-server/
+.cursor-server/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# System files
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.lesshst
+.wget-hsts
+.sudo_as_admin_successful
+.ssh/
+.config/
+.local/
+.snap/
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+libpostal/
+simple_ollama_api/
+weavite_ragflow-main/
+voice_to_voice/
+ultravox_git/
+hybrid_search/
+
+# Large binary files
+typescript
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Archive files
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+
+# Configuration files that might contain sensitive data
+.env.local
+.env.production
+.env.staging
+config.ini
+secrets.json
+credentials.json

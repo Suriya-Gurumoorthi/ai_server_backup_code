@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Evaluation System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Add marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .drop-zone {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .markdown-output {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 24px;
+            line-height: 1.7;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .markdown-output h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        .markdown-output h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .markdown-output h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-output h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-output p {
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+        .markdown-output ul, .markdown-output ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .markdown-output li {
+            margin-bottom: 0.25rem;
+            color: #374151;
+        }
+        .markdown-output strong {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .markdown-output em {
+            font-style: italic;
+            color: #6b7280;
+        }
+        .markdown-output code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #dc2626;
+        }
+        .markdown-output pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .markdown-output pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #374151;
+        }
+        .markdown-output blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .markdown-output table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .markdown-output th, .markdown-output td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        .markdown-output th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        .markdown-output hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <i class="fas fa-microphone-alt text-3xl text-blue-600 mr-3"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">AI Interview Evaluation (Novel Candidates)</h1>
+                        <p class="text-sm text-gray-600">Professional audio analysis using Ultravox AI</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="model-status" class="flex items-center">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
+                        <span class="text-sm text-gray-600">Checking model status...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-sm border p-8 mb-8">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-2">Upload Interview Audio</h2>
+                <p class="text-gray-600">Upload an audio file to get professional evaluation results</p>
+            </div>
+
+            <!-- File Upload Area -->
+            <div id="upload-area" class="drop-zone rounded-lg p-12 text-center cursor-pointer hover:bg-gray-50">
+                <div class="space-y-4">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                    <div>
+                        <p class="text-lg font-medium text-gray-900">Drop your audio file here</p>
+                        <p class="text-sm text-gray-500">or click to browse</p>
+                    </div>
+                    <p class="text-xs text-gray-400">
+                        Supported formats: WAV, MP3, FLAC, M4A (Max 50MB)
+                    </p>
+                </div>
+                <input type="file" id="file-input" class="hidden" accept=".wav,.mp3,.flac,.m4a">
+            </div>
+
+            <!-- Upload Progress -->
+            <div id="upload-progress" class="hidden mt-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700">Uploading...</span>
+                    <span id="upload-percentage" class="text-sm text-gray-500">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progress-bar" class="progress-bar bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Status -->
+        <div id="processing-status" class="hidden bg-white rounded-lg shadow-sm border p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Processing Status</h3>
+                <div id="status-indicator" class="flex items-center">
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2 pulse"></div>
+                    <span class="text-sm text-gray-600">Processing...</span>
+                </div>
+            </div>
+            <div id="status-message" class="text-gray-600">Initializing...</div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="hidden bg-white rounded-lg shadow-sm border p-8 fade-in">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Evaluation Results</h3>
+                <p class="text-sm text-gray-600">Formatted output from the AI model</p>
+            </div>
+            <div id="results-content" class="markdown-output">
+                <!-- Markdown-formatted LLM output will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="error-section" class="hidden bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-400 mr-3"></i>
+                <div>
+                    <h3 class="text-lg font-medium text-red-800">Error</h3>
+                    <p id="error-message" class="text-red-700 mt-1"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2024 AI Interview Evaluation System. Powered by Ultravox AI.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentJobId = null;
+        let statusCheckInterval = null;
+
+        // Configure marked.js for markdown rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            sanitize: false
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkModelStatus();
+            setupFileUpload();
+        });
+
+        // Check model status
+        async function checkModelStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('model-status');
+                if (data.model_loaded) {
+                    statusElement.innerHTML = `
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        <span class="text-sm text-green-600">Model Ready</span>
+                    `;
+                } else {
+                    statusElement.innerHTML = `
+                        <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                        <span class="text-sm text-yellow-600">Model Loading...</span>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error checking model status:', error);
+            }
+        }
+
+        // Setup file upload
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+
+            // Click to upload
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        // Handle file upload
+        async function handleFileUpload(file) {
+            // Validate file
+            if (!validateFile(file)) return;
+
+            // Show upload progress
+            showUploadProgress();
+
+            // Create FormData
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Upload file
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                currentJobId = data.job_id;
+
+                // Hide upload progress and show processing status
+                hideUploadProgress();
+                showProcessingStatus();
+
+                // Start monitoring processing status
+                startStatusMonitoring();
+
+            } catch (error) {
+                hideUploadProgress();
+                showError(error.message);
+            }
+        }
+
+        // Validate file
+        function validateFile(file) {
+            const allowedTypes = ['.wav', '.mp3', '.flac', '.m4a'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                showError('Unsupported file format. Please upload WAV, MP3, FLAC, or M4A files.');
+                return false;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showError('File too large. Maximum size is 50MB.');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Show upload progress
+        function showUploadProgress() {
+            document.getElementById('upload-progress').classList.remove('hidden');
+            document.getElementById('processing-status').classList.add('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            document.getElementById('error-section').classList.add('hidden');
+        }
+
+        // Hide upload progress
+        function hideUploadProgress() {
+            document.getElementById('upload-progress').classList.add('hidden');
+        }
+
+        // Show processing status
+        function showProcessingStatus() {
+            document.getElementById('processing-status').classList.remove('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            document.getElementById('error-section').classList.add('hidden');
+        }
+
+        // Start status monitoring
+        function startStatusMonitoring() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+
+            statusCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/status/${currentJobId}`);
+                    const data = await response.json();
+
+                    updateProcessingStatus(data);
+
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(statusCheckInterval);
+                        if (data.status === 'completed') {
+                            showResults(data);
+                        } else {
+                            showError(data.error || 'Processing failed');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking status:', error);
+                }
+            }, 2000);
+        }
+
+        // Update processing status
+        function updateProcessingStatus(data) {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusMessage = document.getElementById('status-message');
+
+            if (data.status === 'processing') {
+                statusIndicator.innerHTML = `
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full mr-2 pulse"></div>
+                    <span class="text-sm text-gray-600">Processing...</span>
+                `;
+                statusMessage.textContent = data.progress || 'Processing audio file...';
+            } else if (data.status === 'completed') {
+                statusIndicator.innerHTML = `
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm text-green-600">Completed</span>
+                `;
+                statusMessage.textContent = 'Evaluation completed successfully!';
+            } else if (data.status === 'failed') {
+                statusIndicator.innerHTML = `
+                    <div class="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+                    <span class="text-sm text-red-600">Failed</span>
+                `;
+                statusMessage.textContent = data.error || 'Processing failed';
+            }
+        }
+
+        // Show results
+        function showResults(data) {
+            const resultsSection = document.getElementById('results-section');
+            const resultsContent = document.getElementById('results-content');
+
+            // Display markdown-formatted LLM output
+            const result = data.result || 'No output available';
+            
+            try {
+                // Convert markdown to HTML
+                const htmlContent = marked.parse(result);
+                resultsContent.innerHTML = htmlContent;
+            } catch (error) {
+                // Fallback to plain text if markdown parsing fails
+                console.error('Markdown parsing error:', error);
+                resultsContent.textContent = result;
+            }
+
+            resultsSection.classList.remove('hidden');
+            document.getElementById('processing-status').classList.add('hidden');
+        }
+
+        // Show error
+        function showError(message) {
+            const errorSection = document.getElementById('error-section');
+            const errorMessage = document.getElementById('error-message');
+            
+            errorMessage.textContent = message;
+            errorSection.classList.remove('hidden');
+            
+            document.getElementById('upload-progress').classList.add('hidden');
+            document.getElementById('processing-status').classList.add('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+        }
+    </script>
+</body>
+</html> 
