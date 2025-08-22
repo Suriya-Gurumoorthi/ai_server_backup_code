@@ -185,19 +185,6 @@ temp_audio/
 *.svg
 *.ico
 
-# Data files
-*.csv
-*.tsv
-*.xlsx
-*.xls
-*.json
-*.xml
-*.yaml
-*.yml
-data/
-datasets/
-raw_data/
-processed_data/
 
 # Logs
 logs/
@@ -274,7 +261,7 @@ simple_ollama_api/
 weavite_ragflow-main/
 voice_to_voice/
 ultravox_git/
-hybrid_search/
+
 
 # Large binary files
 typescript
