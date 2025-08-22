@@ -250,7 +250,7 @@ libpostal/
 simple_ollama_api/venv
 simple_ollama_api/__pycache__
 weavite_ragflow-main/
-voice_to_voice/
+voice_to_voice/voice_env
 ultravox_git/
 
 

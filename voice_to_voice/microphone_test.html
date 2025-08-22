@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e9ecef;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Microphone Test</h1>
+        <p>This page helps test microphone access functionality.</p>
+        
+        <div class="status info" id="browserInfo">
+            Checking browser compatibility...
+        </div>
+        
+        <button id="testBtn">Test Microphone Access</button>
+        <button id="recordBtn" disabled>Record Audio (3s)</button>
+        <button id="clearBtn">Clear Log</button>
+        
+        <div class="status" id="status">Ready to test</div>
+        
+        <h3>Debug Log:</h3>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        const browserInfo = document.getElementById('browserInfo');
+        const testBtn = document.getElementById('testBtn');
+        const recordBtn = document.getElementById('recordBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        let mediaRecorder = null;
+        let audioChunks = [];
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateStatus(message, type = 'info') {
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function checkBrowserCompatibility() {
+            addLog('Checking browser compatibility...');
+            
+            const isSecure = window.location.protocol === 'https:' || 
+                            window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1';
+            
+            const hasGetUserMedia = !!(navigator.mediaDevices?.getUserMedia || 
+                                      navigator.getUserMedia ||
+                                      navigator.webkitGetUserMedia);
+            
+            addLog(`Protocol: ${window.location.protocol}`);
+            addLog(`Hostname: ${window.location.hostname}`);
+            addLog(`Is secure: ${isSecure}`);
+            addLog(`Has getUserMedia: ${hasGetUserMedia}`);
+            addLog(`navigator.mediaDevices: ${!!navigator.mediaDevices}`);
+            addLog(`navigator.mediaDevices.getUserMedia: ${!!navigator.mediaDevices?.getUserMedia}`);
+            
+            if (!isSecure) {
+                browserInfo.innerHTML = '⚠️ <strong>Warning:</strong> Not on HTTPS or localhost. Microphone access may be blocked.';
+                browserInfo.className = 'status error';
+            } else if (!hasGetUserMedia) {
+                browserInfo.innerHTML = '❌ <strong>Error:</strong> getUserMedia not supported in this browser.';
+                browserInfo.className = 'status error';
+            } else {
+                browserInfo.innerHTML = '✅ <strong>Success:</strong> Browser supports microphone access.';
+                browserInfo.className = 'status success';
+            }
+            
+            return isSecure && hasGetUserMedia;
+        }
+        
+        async function testMicrophone() {
+            try {
+                addLog('Testing microphone access...');
+                updateStatus('Requesting microphone access...', 'info');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                
+                addLog('✅ Microphone access granted!');
+                addLog(`Stream tracks: ${stream.getTracks().length}`);
+                addLog(`Audio tracks: ${stream.getAudioTracks().length}`);
+                
+                updateStatus('Microphone access successful!', 'success');
+                recordBtn.disabled = false;
+                
+                // Store stream for recording
+                window.testStream = stream;
+                
+            } catch (error) {
+                addLog(`❌ Microphone access failed: ${error.name} - ${error.message}`, 'error');
+                updateStatus(`Microphone access failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function recordAudio() {
+            if (!window.testStream) {
+                addLog('❌ No microphone stream available. Test microphone first.', 'error');
+                return;
+            }
+            
+            try {
+                addLog('Starting recording...');
+                updateStatus('Recording...', 'info');
+                
+                const mimeTypes = [
+                    'audio/webm',
+                    'audio/webm;codecs=opus',
+                    'audio/mp4',
+                    'audio/ogg;codecs=opus',
+                    'audio/wav'
+                ];
+                
+                let selectedMimeType = null;
+                for (const mimeType of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mimeType)) {
+                        selectedMimeType = mimeType;
+                        addLog(`Selected MIME type: ${selectedMimeType}`);
+                        break;
+                    }
+                }
+                
+                if (!selectedMimeType) {
+                    throw new Error('No supported audio format found');
+                }
+                
+                mediaRecorder = new MediaRecorder(window.testStream, {
+                    mimeType: selectedMimeType,
+                    audioBitsPerSecond: 128000
+                });
+                
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        addLog(`Audio chunk received: ${event.data.size} bytes`);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: selectedMimeType });
+                    addLog(`✅ Recording completed! Total size: ${audioBlob.size} bytes`);
+                    updateStatus(`Recording completed: ${audioBlob.size} bytes`, 'success');
+                    
+                    // Create audio element to play back
+                    const audio = new Audio(URL.createObjectURL(audioBlob));
+                    audio.controls = true;
+                    audio.style.width = '100%';
+                    audio.style.marginTop = '10px';
+                    
+                    const audioContainer = document.createElement('div');
+                    audioContainer.innerHTML = '<h4>Recorded Audio:</h4>';
+                    audioContainer.appendChild(audio);
+                    log.appendChild(audioContainer);
+                };
+                
+                mediaRecorder.start();
+                
+                // Stop recording after 3 seconds
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                addLog(`❌ Recording failed: ${error.message}`, 'error');
+                updateStatus(`Recording failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearLog() {
+            log.innerHTML = '';
+            updateStatus('Log cleared', 'info');
+        }
+        
+        // Event listeners
+        testBtn.addEventListener('click', testMicrophone);
+        recordBtn.addEventListener('click', recordAudio);
+        clearBtn.addEventListener('click', clearLog);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkBrowserCompatibility();
+        });
+    </script>
+</body>
+</html> 

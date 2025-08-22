@@ -1,0 +1,15 @@
+# WebRTC Dependencies
+websockets>=11.0.3
+asyncio-mqtt>=0.16.1
+
+# Audio Processing
+pyaudio>=0.2.11
+numpy>=1.21.0
+scipy>=1.7.0
+
+# WebRTC Python (optional - for server-side WebRTC)
+aiortc>=1.5.0
+
+# Additional dependencies for real-time audio
+sounddevice>=0.4.6
+librosa>=0.10.0 

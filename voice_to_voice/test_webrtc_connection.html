@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .connecting { background: #fff3cd; color: #856404; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 WebRTC Connection Test</h1>
+        
+        <div id="status" class="status disconnected">Disconnected</div>
+        
+        <div>
+            <button id="connectBtn" onclick="connect()">Connect Socket.IO</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button id="testBtn" onclick="testMessage()" disabled>Send Test Message</button>
+        </div>
+        
+        <h3>Connection Log:</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script>
+        let socket = null;
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const testBtn = document.getElementById('testBtn');
+
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `[${timestamp}] ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus(text, className) {
+            status.textContent = text;
+            status.className = `status ${className}`;
+        }
+
+        function connect() {
+            addLog('Attempting to connect to Socket.IO...');
+            updateStatus('Connecting...', 'connecting');
+            
+            socket = io();
+            
+            socket.on('connect', () => {
+                addLog('✅ Connected to Socket.IO server');
+                updateStatus('Connected', 'connected');
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                testBtn.disabled = false;
+            });
+            
+            socket.on('disconnect', () => {
+                addLog('❌ Disconnected from Socket.IO server');
+                updateStatus('Disconnected', 'disconnected');
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                testBtn.disabled = true;
+            });
+            
+            socket.on('connect_error', (error) => {
+                addLog(`❌ Connection error: ${error.message}`);
+                updateStatus('Connection Failed', 'disconnected');
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                testBtn.disabled = true;
+            });
+            
+            socket.on('joined', (data) => {
+                addLog(`✅ Joined session: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('answer', (data) => {
+                addLog(`📨 Received answer: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('ice-candidate', (data) => {
+                addLog(`🧊 Received ICE candidate: ${JSON.stringify(data)}`);
+            });
+            
+            socket.on('ai-response', (data) => {
+                addLog(`🤖 Received AI response: ${JSON.stringify(data)}`);
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                addLog('Disconnecting...');
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function testMessage() {
+            if (socket) {
+                const testData = {
+                    sessionId: 'test_session_' + Date.now(),
+                    message: 'Hello from test client!'
+                };
+                addLog(`📤 Sending test message: ${JSON.stringify(testData)}`);
+                socket.emit('join', testData);
+            }
+        }
+
+        // Auto-connect on page load
+        window.onload = () => {
+            addLog('Page loaded. Click "Connect Socket.IO" to test connection.');
+        };
+    </script>
+</body>
+</html> 

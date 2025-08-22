@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel Office - Sales Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="novel-office-container">
+        <!-- Header -->
+        <header class="novel-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <i class="fas fa-building"></i>
+                    <h1>Novel Office</h1>
+                    <span class="tagline">Flexible Office Solutions</span>
+                </div>
+                <div class="assistant-info">
+                    <div class="assistant-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="assistant-details">
+                        <h3>Fahad</h3>
+                        <p>Sales & Marketing Specialist</p>
+                        <span class="status-indicator" id="connectionStatus">
+                            <i class="fas fa-circle"></i> Ready
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Conversation Area -->
+            <div class="conversation-container">
+                <div class="conversation-header">
+                    <h2><i class="fas fa-comments"></i> Conversation</h2>
+                    <div class="conversation-controls">
+                        <button id="clearMemory" class="control-btn" title="Clear Conversation">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button id="toggleMute" class="control-btn" title="Toggle Mute">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="messages-container" id="messages">
+                    <div class="welcome-message">
+                        <div class="welcome-content">
+                            <i class="fas fa-handshake"></i>
+                            <h3>Welcome to Novel Office!</h3>
+                            <p>Hi! I'm Fahad, your dedicated sales specialist. I'm here to help you find the perfect office space solution for your business needs.</p>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" data-action="office-space">
+                                    <i class="fas fa-building"></i>
+                                    Office Space
+                                </button>
+                                <button class="quick-action-btn" data-action="investment">
+                                    <i class="fas fa-chart-line"></i>
+                                    Investment
+                                </button>
+                                <button class="quick-action-btn" data-action="amenities">
+                                    <i class="fas fa-wifi"></i>
+                                    Amenities
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Controls -->
+            <div class="voice-controls">
+                <div class="control-panel">
+                    <!-- Recording Controls -->
+                    <div class="recording-section">
+                        <button id="startRecording" class="record-btn primary">
+                            <i class="fas fa-microphone"></i>
+                            <span>Start Recording</span>
+                        </button>
+                        <button id="stopRecording" class="record-btn secondary" disabled>
+                            <i class="fas fa-stop"></i>
+                            <span>Stop Recording</span>
+                        </button>
+                        <button id="interruptAI" class="interrupt-btn" disabled>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Interrupt</span>
+                        </button>
+                    </div>
+
+                    <!-- Status Indicators -->
+                    <div class="status-section">
+                        <div class="status-item">
+                            <span class="status-label">Recording:</span>
+                            <span class="status-value" id="recordingStatus">
+                                <i class="fas fa-circle"></i> Ready
+                            </span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">AI Speaking:</span>
+                            <span class="status-value" id="aiSpeakingStatus">
+                                <i class="fas fa-circle"></i> Silent
+                            </span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Memory:</span>
+                            <span class="status-value" id="memoryStatus">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Text Input Alternative -->
+                    <div class="text-input-section">
+                        <div class="input-group">
+                            <input type="text" id="textInput" placeholder="Type your message here..." />
+                            <button id="sendText" class="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Floating Action Button for Quick Actions -->
+        <div class="fab-container">
+            <button class="fab-main" id="fabMain">
+                <i class="fas fa-plus"></i>
+            </button>
+            <div class="fab-options" id="fabOptions">
+                <button class="fab-option" data-action="test-microphone" title="Test Microphone">
+                    <i class="fas fa-microphone-alt"></i>
+                </button>
+                <button class="fab-option" data-action="office-info" title="Office Information">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <button class="fab-option" data-action="contact-info" title="Contact Information">
+                    <i class="fas fa-phone"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p id="loadingMessage">Processing your request...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/voice_interface.js') }}"></script>
+</body>
+</html>

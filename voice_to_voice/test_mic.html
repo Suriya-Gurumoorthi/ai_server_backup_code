@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e9ecef;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Microphone Test Page</h1>
+        <p>This page will help you test if your browser can access your microphone.</p>
+        
+        <div id="browserInfo" class="status info" style="margin-bottom: 20px;">
+            <strong>Browser Information:</strong><br>
+            <span id="browserDetails">Detecting browser...</span>
+        </div>
+        
+        <div id="status" class="status info">
+            Click "Test Microphone" to start the test.
+        </div>
+        
+        <button id="testBtn" onclick="testMicrophone()">Test Microphone</button>
+        <button id="recordBtn" onclick="startRecording()" disabled>Start Recording (3s)</button>
+        <button id="stopBtn" onclick="stopRecording()" disabled>Stop Recording</button>
+        <button id="altTestBtn" onclick="testAlternative()" style="background: #28a745;">Alternative Test (No Microphone)</button>
+        <button id="localhostBtn" onclick="switchToLocalhost()" style="background: #ffc107; color: #000;">Try Localhost Version</button>
+        <button id="forceEnableBtn" onclick="forceEnableRecording()" style="background: #dc3545; color: #fff;">Force Enable Recording (Debug)</button>
+        <button id="checkPermissionBtn" onclick="checkMicrophonePermission()" style="background: #17a2b8; color: #fff;">Check Permission Status</button>
+        <button id="quickTestBtn" onclick="tryQuickMicrophoneTest()" style="background: #6f42c1; color: #fff;">Quick Microphone Test</button>
+        
+        <div id="log" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
+            <strong>Console Log:</strong><br>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let stream = null;
+
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName = 'Unknown';
+            let browserVersion = 'Unknown';
+            let isSupported = false;
+            
+            if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+                browserName = 'Chrome';
+                browserVersion = userAgent.match(/Chrome\/(\d+)/)?.[1] || 'Unknown';
+                isSupported = true;
+            } else if (userAgent.includes('Firefox')) {
+                browserName = 'Firefox';
+                browserVersion = userAgent.match(/Firefox\/(\d+)/)?.[1] || 'Unknown';
+                isSupported = true;
+            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                browserName = 'Safari';
+                browserVersion = userAgent.match(/Version\/(\d+)/)?.[1] || 'Unknown';
+                isSupported = true;
+            } else if (userAgent.includes('Edg')) {
+                browserName = 'Edge';
+                browserVersion = userAgent.match(/Edg\/(\d+)/)?.[1] || 'Unknown';
+                isSupported = true;
+            } else if (userAgent.includes('MSIE') || userAgent.includes('Trident')) {
+                browserName = 'Internet Explorer';
+                browserVersion = userAgent.match(/MSIE (\d+)/)?.[1] || userAgent.match(/rv:(\d+)/)?.[1] || 'Unknown';
+                isSupported = false;
+            }
+            
+            // Check for security restrictions
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isSecure = window.location.protocol === 'https:';
+            const isNetworkIP = window.location.hostname === '10.80.2.40';
+            
+            let securityInfo = '';
+            if (!isSecure && !isLocalhost) {
+                securityInfo = '<br><strong>⚠️ Security Warning:</strong> Accessing via HTTP from network IP may block microphone access.';
+                if (isNetworkIP) {
+                    securityInfo += '<br><strong>Solution:</strong> Try using <code>http://127.0.0.1:8081/test_mic.html</code> instead.';
+                }
+            }
+            
+            const details = `${browserName} ${browserVersion}`;
+            const status = isSupported ? '✅ Supported' : '❌ Not Supported';
+            const recommendation = isSupported ? '' : '<br><strong>Recommendation:</strong> Please use Chrome, Firefox, Safari, or Edge for best compatibility.';
+            
+            document.getElementById('browserDetails').innerHTML = `${details} - ${status}${recommendation}${securityInfo}`;
+            
+            return { browserName, browserVersion, isSupported };
+        }
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        async function testMicrophone() {
+            log('Starting microphone test...');
+            updateStatus('Requesting microphone access...', 'info');
+            
+            try {
+                // Enhanced browser compatibility check
+                let getUserMediaFunction = null;
+                
+                // Check for standard getUserMedia
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    getUserMediaFunction = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+                    log('Using standard getUserMedia');
+                }
+                // Check for legacy getUserMedia
+                else if (navigator.getUserMedia) {
+                    getUserMediaFunction = navigator.getUserMedia.bind(navigator);
+                    log('Using legacy getUserMedia');
+                }
+                // Check for webkit getUserMedia
+                else if (navigator.webkitGetUserMedia) {
+                    getUserMediaFunction = navigator.webkitGetUserMedia.bind(navigator);
+                    log('Using webkit getUserMedia');
+                }
+                // Check for moz getUserMedia
+                else if (navigator.mozGetUserMedia) {
+                    getUserMediaFunction = navigator.mozGetUserMedia.bind(navigator);
+                    log('Using moz getUserMedia');
+                }
+                // Check for ms getUserMedia
+                else if (navigator.msGetUserMedia) {
+                    getUserMediaFunction = navigator.msGetUserMedia.bind(navigator);
+                    log('Using ms getUserMedia');
+                }
+                
+                if (!getUserMediaFunction) {
+                    throw new Error('getUserMedia not supported in this browser. Please use Chrome, Firefox, Safari, or Edge.');
+                }
+
+                log('getUserMedia is supported');
+                
+                // Create a promise-based wrapper for legacy getUserMedia with timeout
+                const getUserMediaPromise = (constraints) => {
+                    return new Promise((resolve, reject) => {
+                        const timeoutId = setTimeout(() => {
+                            reject(new Error('getUserMedia request timed out after 10 seconds'));
+                        }, 10000);
+                        
+                        getUserMediaFunction(constraints, (stream) => {
+                            clearTimeout(timeoutId);
+                            resolve(stream);
+                        }, (error) => {
+                            clearTimeout(timeoutId);
+                            reject(error);
+                        });
+                    });
+                };
+                
+                // Request microphone access - try simple constraints first
+                log('Requesting microphone access with simple constraints...');
+                try {
+                    stream = await getUserMediaPromise({ 
+                        audio: true
+                    });
+                    log('getUserMedia promise resolved successfully with simple constraints');
+                } catch (getUserMediaError) {
+                    log(`Simple constraints failed: ${getUserMediaError.name} - ${getUserMediaError.message}`);
+                    
+                    // Try with more specific constraints
+                    log('Trying with specific audio constraints...');
+                    try {
+                        stream = await getUserMediaPromise({ 
+                            audio: {
+                                echoCancellation: true,
+                                noiseSuppression: true,
+                                autoGainControl: true
+                            } 
+                        });
+                        log('getUserMedia promise resolved successfully with specific constraints');
+                    } catch (specificError) {
+                        log(`Specific constraints also failed: ${specificError.name} - ${specificError.message}`);
+                        throw specificError;
+                    }
+                }
+                
+                log('Microphone access granted!');
+                updateStatus('✅ Microphone access granted! You can now test recording.', 'success');
+                
+                // Store successful access in session storage
+                sessionStorage.setItem('microphoneAccessGranted', 'true');
+                
+                // Enable recording button
+                const recordBtn = document.getElementById('recordBtn');
+                recordBtn.disabled = false;
+                recordBtn.style.background = '#28a745'; // Green background
+                recordBtn.style.color = 'white';
+                log('Recording button enabled and highlighted');
+                
+                // Check MediaRecorder support
+                if (window.MediaRecorder) {
+                    log('MediaRecorder is supported');
+                    
+                    // Check supported MIME types
+                    const mimeTypes = [
+                        'audio/webm',
+                        'audio/webm;codecs=opus',
+                        'audio/mp4',
+                        'audio/ogg;codecs=opus',
+                        'audio/wav'
+                    ];
+                    
+                    for (const mimeType of mimeTypes) {
+                        if (MediaRecorder.isTypeSupported(mimeType)) {
+                            log(`Supported MIME type: ${mimeType}`);
+                            break;
+                        }
+                    }
+                } else {
+                    log('MediaRecorder not supported');
+                }
+                
+            } catch (error) {
+                log(`Error: ${error.message}`);
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+                
+                if (error.name === 'NotAllowedError') {
+                    updateStatus('❌ Microphone access denied. Please allow microphone access in your browser settings.', 'error');
+                } else if (error.name === 'NotFoundError') {
+                    updateStatus('❌ No microphone found. Please connect a microphone and try again.', 'error');
+                } else if (error.name === 'SecurityError') {
+                    updateStatus('❌ Microphone access blocked due to security restrictions. Try using localhost or check browser settings.', 'error');
+                }
+            }
+        }
+
+        function startRecording() {
+            if (!stream) {
+                updateStatus('❌ No microphone stream available. Please test microphone first.', 'error');
+                return;
+            }
+
+            try {
+                log('Starting recording...');
+                updateStatus('Recording... Speak into your microphone', 'info');
+                
+                // Get supported MIME type
+                const mimeTypes = [
+                    'audio/webm',
+                    'audio/webm;codecs=opus',
+                    'audio/mp4',
+                    'audio/ogg;codecs=opus',
+                    'audio/wav'
+                ];
+                
+                let selectedMimeType = null;
+                for (const mimeType of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mimeType)) {
+                        selectedMimeType = mimeType;
+                        break;
+                    }
+                }
+                
+                if (!selectedMimeType) {
+                    throw new Error('No supported audio format found');
+                }
+                
+                log(`Using MIME type: ${selectedMimeType}`);
+                
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: selectedMimeType,
+                    audioBitsPerSecond: 128000
+                });
+                
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        log(`Audio chunk received: ${event.data.size} bytes`);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: selectedMimeType });
+                    log(`Recording stopped. Total size: ${audioBlob.size} bytes`);
+                    
+                    if (audioBlob.size > 1000) {
+                        updateStatus(`✅ Recording successful! Captured ${audioBlob.size} bytes of audio.`, 'success');
+                    } else {
+                        updateStatus('⚠️ Recording completed but file is very small. Try speaking louder.', 'error');
+                    }
+                    
+                    document.getElementById('stopBtn').disabled = true;
+                    const recordBtn = document.getElementById('recordBtn');
+                    recordBtn.disabled = false;
+                    recordBtn.style.background = '#28a745'; // Keep green
+                    recordBtn.style.color = 'white';
+                };
+                
+                mediaRecorder.onerror = (event) => {
+                    log(`MediaRecorder error: ${event.error}`);
+                    updateStatus(`❌ Recording error: ${event.error}`, 'error');
+                };
+                
+                mediaRecorder.start(1000); // Collect data every second
+                
+                document.getElementById('recordBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                
+                // Auto-stop after 3 seconds
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        stopRecording();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                log(`Recording error: ${error.message}`);
+                updateStatus(`❌ Recording error: ${error.message}`, 'error');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        }
+
+        function resetRecordingButton() {
+            const recordBtn = document.getElementById('recordBtn');
+            recordBtn.disabled = true;
+            recordBtn.style.background = '#007bff'; // Reset to original blue
+            recordBtn.style.color = 'white';
+        }
+
+        // Clean up when page is closed
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Detect browser when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            detectBrowser();
+            
+            // Check if we're coming back from a successful test
+            if (sessionStorage.getItem('microphoneAccessGranted') === 'true') {
+                log('Previous microphone access detected, enabling recording button');
+                const recordBtn = document.getElementById('recordBtn');
+                recordBtn.disabled = false;
+                recordBtn.style.background = '#28a745';
+                recordBtn.style.color = 'white';
+                updateStatus('✅ Microphone access previously granted. Recording button enabled.', 'success');
+            }
+        });
+
+        function testAlternative() {
+            log('Starting alternative test (no microphone required)...');
+            updateStatus('Running alternative test...', 'info');
+            
+            // Test basic browser capabilities
+            const tests = [
+                { name: 'JavaScript', test: () => true },
+                { name: 'DOM API', test: () => !!document.getElementById },
+                { name: 'Fetch API', test: () => !!window.fetch },
+                { name: 'Web Audio API', test: () => !!window.AudioContext || !!window.webkitAudioContext },
+                { name: 'MediaRecorder', test: () => !!window.MediaRecorder },
+                { name: 'getUserMedia', test: () => {
+                    // More comprehensive getUserMedia detection
+                    const hasStandard = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+                    const hasLegacy = !!navigator.getUserMedia;
+                    const hasWebkit = !!navigator.webkitGetUserMedia;
+                    const hasMoz = !!navigator.mozGetUserMedia;
+                    const hasMs = !!navigator.msGetUserMedia;
+                    
+                    const hasAny = hasStandard || hasLegacy || hasWebkit || hasMoz || hasMs;
+                    
+                    if (hasAny) {
+                        log(`getUserMedia variants: Standard=${hasStandard}, Legacy=${hasLegacy}, Webkit=${hasWebkit}, Moz=${hasMoz}, MS=${hasMs}`);
+                    }
+                    
+                    return hasAny;
+                }}
+            ];
+            
+            let passedTests = 0;
+            let totalTests = tests.length;
+            
+            tests.forEach(({ name, test }) => {
+                try {
+                    const result = test();
+                    if (result) {
+                        log(`✅ ${name}: Supported`);
+                        passedTests++;
+                    } else {
+                        log(`❌ ${name}: Not supported`);
+                    }
+                } catch (error) {
+                    log(`❌ ${name}: Error - ${error.message}`);
+                }
+            });
+            
+            const successRate = (passedTests / totalTests) * 100;
+            log(`Test Results: ${passedTests}/${totalTests} tests passed (${successRate.toFixed(1)}%)`);
+            
+            if (successRate >= 80) {
+                updateStatus(`✅ Alternative test passed! Browser supports ${passedTests}/${totalTests} features.`, 'success');
+            } else if (successRate >= 50) {
+                updateStatus(`⚠️ Alternative test partially passed. ${passedTests}/${totalTests} features supported.`, 'error');
+            } else {
+                updateStatus(`❌ Alternative test failed. Only ${passedTests}/${totalTests} features supported.`, 'error');
+            }
+        }
+
+        function switchToLocalhost() {
+            const currentUrl = window.location.href;
+            const localhostUrl = currentUrl.replace('10.80.2.40', '127.0.0.1');
+            
+            log(`Switching to localhost version: ${localhostUrl}`);
+            updateStatus('Redirecting to localhost version...', 'info');
+            
+            // Show a confirmation dialog
+            if (confirm('This will redirect you to the localhost version which should work better with microphone access. Continue?')) {
+                window.location.href = localhostUrl;
+            }
+        }
+
+        function forceEnableRecording() {
+            log('Force enabling recording button (debug mode)');
+            const recordBtn = document.getElementById('recordBtn');
+            recordBtn.disabled = false;
+            recordBtn.style.background = '#28a745';
+            recordBtn.style.color = 'white';
+            updateStatus('⚠️ Recording button force-enabled (debug mode). Microphone access not verified.', 'error');
+            log('Recording button force-enabled - use at your own risk');
+        }
+
+        function checkMicrophonePermission() {
+            log('Checking microphone permission status...');
+            
+            // Check if we can query permissions
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'microphone' }).then(permissionStatus => {
+                    log(`Microphone permission status: ${permissionStatus.state}`);
+                    
+                    if (permissionStatus.state === 'granted') {
+                        log('✅ Microphone permission already granted');
+                        const recordBtn = document.getElementById('recordBtn');
+                        recordBtn.disabled = false;
+                        recordBtn.style.background = '#28a745';
+                        recordBtn.style.color = 'white';
+                        updateStatus('✅ Microphone permission already granted. Recording button enabled.', 'success');
+                    } else if (permissionStatus.state === 'denied') {
+                        log('❌ Microphone permission denied by user');
+                        updateStatus('❌ Microphone permission denied. Please allow microphone access in browser settings.', 'error');
+                    } else if (permissionStatus.state === 'prompt') {
+                        log('⏳ Microphone permission needs to be requested');
+                        updateStatus('⏳ Click "Test Microphone" to request permission', 'info');
+                    }
+                }).catch(error => {
+                    log(`Error checking permission: ${error.message}`);
+                });
+            } else {
+                log('Permission API not supported, cannot check status');
+            }
+        }
+
+        function tryQuickMicrophoneTest() {
+            log('Trying quick microphone test with minimal constraints...');
+            
+            // Try the most basic getUserMedia call possible
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        log('✅ Quick microphone test successful!');
+                        log(`Stream active: ${stream.active}, tracks: ${stream.getTracks().length}`);
+                        
+                        // Stop the stream immediately
+                        stream.getTracks().forEach(track => track.stop());
+                        log('Stream stopped');
+                        
+                        // Enable recording button
+                        const recordBtn = document.getElementById('recordBtn');
+                        recordBtn.disabled = false;
+                        recordBtn.style.background = '#28a745';
+                        recordBtn.style.color = 'white';
+                        updateStatus('✅ Microphone access confirmed! Recording button enabled.', 'success');
+                    })
+                    .catch(error => {
+                        log(`❌ Quick microphone test failed: ${error.name} - ${error.message}`);
+                        updateStatus(`❌ Microphone test failed: ${error.message}`, 'error');
+                    });
+            } else {
+                log('❌ getUserMedia not available');
+                updateStatus('❌ getUserMedia not supported in this browser', 'error');
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-to-Voice AI - WebRTC Real-time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .status-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .status {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        .status.disconnected {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .status.connecting {
+            background: #feca57;
+            color: #333;
+        }
+
+        .status.connected {
+            background: #48dbfb;
+            color: white;
+        }
+
+        .status.error {
+            background: #ff4757;
+            color: white;
+        }
+
+        .status.speaking {
+            background: #2ed573;
+            color: white;
+        }
+
+        .status.processing {
+            background: #ffa502;
+            color: white;
+        }
+
+        .status.ai-speaking {
+            background: #3742fa;
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .audio-visualizer {
+            width: 100%;
+            height: 100px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ddd;
+        }
+
+        .visualizer-bars {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 60px;
+        }
+
+        .bar {
+            width: 4px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        .messages-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            margin-left: 20%;
+        }
+
+        .message.ai {
+            background: #e9ecef;
+            color: #333;
+            margin-right: 20%;
+        }
+
+        .message strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .info-panel {
+            background: #e3f2fd;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-panel h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .info-panel ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-panel li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+        }
+
+        .info-panel li:last-child {
+            border-bottom: none;
+        }
+
+        .info-panel li strong {
+            color: #1976d2;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .status-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Voice-to-Voice AI</h1>
+            <p>Real-time WebRTC Communication</p>
+        </div>
+
+        <div class="status-section">
+            <div>
+                <h3>Connection Status</h3>
+                <p>WebRTC real-time audio communication</p>
+            </div>
+            <div id="webrtcStatus" class="status disconnected">Disconnected</div>
+        </div>
+
+        <div class="controls">
+            <button id="connectWebRTC" class="btn btn-primary">Connect WebRTC</button>
+            <button id="disconnectWebRTC" class="btn btn-danger" disabled>Disconnect</button>
+        </div>
+
+        <div class="audio-visualizer">
+            <div id="audioVisualizer" class="visualizer-bars">
+                <div class="bar" style="height: 20px;"></div>
+                <div class="bar" style="height: 30px;"></div>
+                <div class="bar" style="height: 15px;"></div>
+                <div class="bar" style="height: 40px;"></div>
+                <div class="bar" style="height: 25px;"></div>
+                <div class="bar" style="height: 35px;"></div>
+                <div class="bar" style="height: 20px;"></div>
+                <div class="bar" style="height: 30px;"></div>
+                <div class="bar" style="height: 15px;"></div>
+                <div class="bar" style="height: 40px;"></div>
+                <div class="bar" style="height: 25px;"></div>
+                <div class="bar" style="height: 35px;"></div>
+                <div class="bar" style="height: 20px;"></div>
+                <div class="bar" style="height: 30px;"></div>
+                <div class="bar" style="height: 15px;"></div>
+                <div class="bar" style="height: 40px;"></div>
+                <div class="bar" style="height: 25px;"></div>
+                <div class="bar" style="height: 35px;"></div>
+            </div>
+        </div>
+
+        <div class="messages-container">
+            <div id="webrtcMessages">
+                <div class="message ai">
+                    <strong>AI Assistant</strong>
+                    Hello! I'm ready for real-time voice conversation. Click "Connect WebRTC" to start.
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Processing audio...</p>
+        </div>
+
+        <div class="info-panel">
+            <h3>🚀 WebRTC Features</h3>
+            <ul>
+                <li><strong>Real-time Audio:</strong> Continuous bidirectional audio streaming</li>
+                <li><strong>Low Latency:</strong> Direct peer-to-peer communication</li>
+                <li><strong>Automatic Processing:</strong> Speech recognition and AI response generation</li>
+                <li><strong>Silence Detection:</strong> Intelligent audio chunking based on speech activity</li>
+                <li><strong>Echo Cancellation:</strong> Built-in noise suppression and audio enhancement</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="/static/js/webrtc_interface.js"></script>
+    <script>
+        // Audio visualizer animation
+        function updateVisualizer() {
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach(bar => {
+                const height = Math.random() * 50 + 10;
+                bar.style.height = height + 'px';
+            });
+        }
+
+        // Update visualizer when connected
+        setInterval(() => {
+            if (window.webrtcInterface && window.webrtcInterface.isConnected) {
+                updateVisualizer();
+            }
+        }, 100);
+
+        // Show loading indicator
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        // Override the addMessage function to show loading
+        if (window.webrtcInterface) {
+            const originalAddMessage = window.webrtcInterface.addMessage;
+            window.webrtcInterface.addMessage = function(speaker, text) {
+                if (speaker === 'AI') {
+                    showLoading();
+                    setTimeout(hideLoading, 1000);
+                }
+                originalAddMessage.call(this, speaker, text);
+            };
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,54 @@
+# Core dependencies
+flask>=2.3.0
+flask-socketio>=5.3.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+websockets>=11.0.0
+
+# Audio processing
+pyaudio>=0.2.11
+soundfile>=0.12.1
+librosa>=0.10.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Machine learning and AI
+torch>=2.0.0
+transformers>=4.30.0
+sentence-transformers>=2.2.0
+
+# Text processing
+nltk>=3.8.1
+spacy>=3.6.0
+
+# Database and storage
+sqlalchemy>=2.0.0
+pandas>=2.0.0
+json5>=0.9.14
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+aiofiles>=23.1.0
+asyncio-mqtt>=0.13.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Piper TTS dependencies
+onnxruntime>=1.15.0
+piper-tts>=1.2.0
+
+# Web interface
+#jinja2>=3.1.0
+#bootstrap>=5.3.0
+
+pyttsx3
+speechrecognition
+sounddevice
+scipy
+pydub
+flask
