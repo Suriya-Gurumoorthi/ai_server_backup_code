@@ -175,16 +175,6 @@ temp_audio/
 *.flv
 *.webm
 
-# Image files (if not needed for code)
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.bmp
-*.tiff
-*.svg
-*.ico
-
 
 # Logs
 logs/
