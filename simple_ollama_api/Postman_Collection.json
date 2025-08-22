@@ -1,0 +1,203 @@
+{
+	"info": {
+		"_postman_id": "simple-ollama-api-collection",
+		"name": "Simple Ollama API",
+		"description": "Collection for testing the Simple Ollama API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.80.2.40:8080/health",
+					"protocol": "http",
+					"host": [
+						"10.80.2.40"
+					],
+					"port": "8080",
+					"path": [
+						"health"
+					]
+				},
+				"description": "Check if the API and Ollama are available"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Valid Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "simple_ollama_key_2024"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"prompt\": \"Hello! Say hi in 3 words.\"\n}"
+				},
+				"url": {
+					"raw": "http://10.80.2.40:8080/chat",
+					"protocol": "http",
+					"host": [
+						"10.80.2.40"
+					],
+					"port": "8080",
+					"path": [
+						"chat"
+					]
+				},
+				"description": "Send a prompt to the LLaMA 3B model with valid API key"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Missing API Key",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"prompt\": \"Hello! Say hi in 3 words.\"\n}"
+				},
+				"url": {
+					"raw": "http://10.80.2.40:8080/chat",
+					"protocol": "http",
+					"host": [
+						"10.80.2.40"
+					],
+					"port": "8080",
+					"path": [
+						"chat"
+					]
+				},
+				"description": "Test error handling when API key is missing"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Wrong API Key",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "wrong_key"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"prompt\": \"Hello! Say hi in 3 words.\"\n}"
+				},
+				"url": {
+					"raw": "http://10.80.2.40:8080/chat",
+					"protocol": "http",
+					"host": [
+						"10.80.2.40"
+					],
+					"port": "8080",
+					"path": [
+						"chat"
+					]
+				},
+				"description": "Test error handling when API key is incorrect"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Missing Prompt",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "simple_ollama_key_2024"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"wrong_field\": \"This should fail\"\n}"
+				},
+				"url": {
+					"raw": "http://10.80.2.40:8080/chat",
+					"protocol": "http",
+					"host": [
+						"10.80.2.40"
+					],
+					"port": "8080",
+					"path": [
+						"chat"
+					]
+				},
+				"description": "Test error handling when prompt field is missing"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Complex Question",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "simple_ollama_key_2024"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"prompt\": \"What is artificial intelligence and how does it work?\"\n}"
+				},
+				"url": {
+					"raw": "http://10.80.2.40:8080/chat",
+					"protocol": "http",
+					"host": [
+						"10.80.2.40"
+					],
+					"port": "8080",
+					"path": [
+						"chat"
+					]
+				},
+				"description": "Test with a more complex question to see response quality"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://10.80.2.40:8080",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "simple_ollama_key_2024",
+			"type": "string"
+		}
+	]
+}

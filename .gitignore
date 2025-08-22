@@ -247,7 +247,8 @@ Thumbs.db
 
 # Application specific
 libpostal/
-simple_ollama_api/
+simple_ollama_api/venv
+simple_ollama_api/__pycache__
 weavite_ragflow-main/
 voice_to_voice/
 ultravox_git/

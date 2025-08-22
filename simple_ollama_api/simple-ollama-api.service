@@ -1,0 +1,15 @@
+[Unit]
+Description=Simple Ollama API
+After=network.target
+
+[Service]
+Type=simple
+User=novel
+WorkingDirectory=/home/novel/simple_ollama_api
+Environment=PATH=/home/novel/simple_ollama_api/venv/bin
+ExecStart=/home/novel/simple_ollama_api/venv/bin/python main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
