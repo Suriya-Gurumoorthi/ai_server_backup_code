@@ -1,0 +1,24 @@
+{
+  "vicidial": {
+    "server_url": "https://your-vicidial-server.com",
+    "api_key": "your_api_key_here",
+    "username": "admin",
+    "timeout": 30
+  },
+  "test_config": {
+    "test_phone_number": "+1234567890",
+    "campaign_id": "your_campaign_id",
+    "conversation_duration": 30,
+    "reference_audio_file": "path/to/reference_audio.wav",
+    "cloning_text": "Hello, this is a test of voice cloning capabilities."
+  },
+  "ultravox": {
+    "model_path": "/path/to/ultravox/model",
+    "device": "cuda",
+    "max_tokens": 100
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "ultravox_vicidial_test.log"
+  }
+}

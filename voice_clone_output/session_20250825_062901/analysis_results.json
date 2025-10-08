@@ -1,0 +1,16 @@
+{
+  "session_id": "20250825_062901",
+  "input_audio": "Recording.m4a",
+  "reference_voice": null,
+  "voice_clone_result": null,
+  "analysis": {
+    "transcription": "",
+    "response": "Hello there. I'm an AI assistant, but you can call me \"Assistant\" or simply \"AI\" for short if you prefer. As for tasks, I can help with a wide range of things such as answering questions, providing information on various topics, generating text, translating languages, and even creating simple conversations like this one. What would you like to talk about or ask?",
+    "audio_duration": 7.7866875,
+    "sample_rate": 16000,
+    "analysis_time": 1756103558.3537776
+  },
+  "tts_response_file": "voice_clone_output/session_20250825_062901/ai_response.wav",
+  "voice_cloning_used": null,
+  "timestamp": "2025-08-25T06:32:39.160236"
+}

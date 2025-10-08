@@ -1,0 +1,13 @@
+{
+  "session_id": "20250825_053246",
+  "input_audio": "Recording.m4a",
+  "analysis": {
+    "transcription": "",
+    "response": "Hello there. I'm happy to chat with you. My name is LLaMA, which stands for Large Language Model Application. I'm an artificial intelligence designed to assist and communicate with humans in a helpful way.\n\nI can perform various tasks such as answering questions, providing information on a wide range of topics, generating text, translating languages, and even creating simple conversations like this one. What would you like to talk about or ask me today?",
+    "audio_duration": 7.7866875,
+    "sample_rate": 16000,
+    "analysis_time": 1756100200.596159
+  },
+  "tts_response_file": "audio_analysis_output/session_20250825_053246/ai_response.wav",
+  "timestamp": "2025-08-25T05:36:41.542646"
+}

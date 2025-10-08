@@ -1,0 +1,24 @@
+# Vector Memory Dependencies for Ultravox WebSocket API
+# Core vector database and embedding libraries
+
+# Vector Databases
+chromadb>=0.4.0
+pinecone-client>=2.2.0
+
+# Embedding Models
+sentence-transformers>=2.2.0
+transformers>=4.30.0
+torch>=2.0.0
+
+# Additional utilities
+numpy>=1.24.0
+scikit-learn>=1.3.0  # For additional similarity metrics if needed
+
+# Optional: For advanced vector operations
+faiss-cpu>=1.7.4  # Alternative vector search if needed
+
+
+
+
+
+

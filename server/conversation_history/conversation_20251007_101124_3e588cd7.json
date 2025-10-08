@@ -1,0 +1,29 @@
+{
+  "session_id": "3e588cd7-96b6-4332-b1ea-246ac41a7380",
+  "connection_id": "6c453e4b-ed5c-4d77-841d-0b3de0041dc2",
+  "created_at": "20251007_101124",
+  "last_updated": "2025-10-07 10:11:34",
+  "conversation_history": [
+    {
+      "AI": "Can you tell me what brings you to Nova l Office today, or would you like me to learn more about your interests before we schedule a call?",
+      "timestamp": "2025-10-07 10:11:25",
+      "type": "ai"
+    },
+    {
+      "User": " you",
+      "timestamp": "2025-10-07 10:11:25",
+      "type": "user"
+    },
+    {
+      "AI": "Just confirming I have your name, please... How did you hear about us, by the way? Was it through a referral or someone who mentioned our name?",
+      "timestamp": "2025-10-07 10:11:28",
+      "type": "ai"
+    },
+    {
+      "User": " you",
+      "timestamp": "2025-10-07 10:11:28",
+      "type": "user"
+    }
+  ],
+  "summary": "Here is a summary of the interview conversation:\n\n**Interviewer:** The recruiter (potential employer) asked the candidate (employee seeking job opportunity) about their background and interests.\n\n**Key Details:**\n\n* Candidate: A new hire at Nova L Office.\n* Background: No information provided.\n* Key points:\n\t+ Recruiter confirmed identity.\n\t+ Responded that they heard about Nova L Office through an unknown source.\n\n**Interviewer Remarks:**\n\n* Asked questions to gather more information, but no concrete insights were gained.\n\n**Outcome:**\n\n* The candidate seemed interested in the position and willing to learn more.\n\n**Candidate's Interest/Fit:**\n\n* The candidate expressed enthusiasm for working with Nova L Office, which suggests a positive fit for the role."
+}

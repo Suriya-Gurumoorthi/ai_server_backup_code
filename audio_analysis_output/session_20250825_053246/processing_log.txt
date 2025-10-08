@@ -1,0 +1,13 @@
+Audio Analysis and TTS Response Session
+Session ID: 20250825_053246
+Input File: Recording.m4a
+Timestamp: 2025-08-25T05:33:41.445941
+==================================================
+
+Analysis Results:
+Transcription: 
+Response: Hello there. I'm happy to chat with you. My name is LLaMA, which stands for Large Language Model Application. I'm an artificial intelligence designed to assist and communicate with humans in a helpful way.
+
+I can perform various tasks such as answering questions, providing information on a wide range of topics, generating text, translating languages, and even creating simple conversations like this one. What would you like to talk about or ask me today?
+TTS Output: audio_analysis_output/session_20250825_053246/ai_response.wav
+Results saved to: audio_analysis_output/session_20250825_053246/analysis_results.json

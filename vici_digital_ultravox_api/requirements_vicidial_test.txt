@@ -1,0 +1,7 @@
+requests>=2.31.0
+librosa>=0.10.1
+numpy>=1.24.0
+soundfile>=0.12.1
+wave>=0.0.2
+argparse>=1.4.0
+typing-extensions>=4.5.0

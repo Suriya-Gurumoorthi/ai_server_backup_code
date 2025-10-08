@@ -1,0 +1,55 @@
+{
+  "prompt_session_id": "58588313-01e0-4f64-81b1-ba509bfd2958",
+  "connection_id": "test_connection_123",
+  "linked_session_id": null,
+  "created_at": "20251007_080035",
+  "last_updated": "2025-10-07 08:00:35",
+  "prompt_logs": [
+    {
+      "prompt_type": "whisper_transcription",
+      "model_name": "whisper-small",
+      "timestamp": "2025-10-07 08:00:35",
+      "input_data": {
+        "audio_data_size": 146364
+      },
+      "response": "Test transcription result",
+      "metadata": {
+        "audio_length": 146364,
+        "model": "openai/whisper-small"
+      }
+    },
+    {
+      "prompt_type": "ultravox_audio_processing",
+      "model_name": "ultravox-v0_5-llama-3_2-1b",
+      "timestamp": "2025-10-07 08:00:35",
+      "input_data": {
+        "audio_data_size": 146364,
+        "conversation_turns": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant."
+          },
+          {
+            "role": "user",
+            "content": "Hello"
+          }
+        ]
+      },
+      "response": "Test AI response",
+      "metadata": {
+        "audio_length": 146364,
+        "conversation_turns_count": 2,
+        "turns": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant."
+          },
+          {
+            "role": "user",
+            "content": "Hello"
+          }
+        ]
+      }
+    }
+  ]
+}

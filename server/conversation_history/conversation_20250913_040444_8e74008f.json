@@ -1,0 +1,89 @@
+{
+  "session_id": "8e74008f-d6d8-4930-bfe2-08fe0cbf9fc2",
+  "connection_id": "7fe8a64e-0cb4-4b95-8558-ffde41198a1e",
+  "created_at": "20250913_040444",
+  "last_updated": "2025-09-13 04:07:11",
+  "conversation_history": [
+    {
+      "User": "lo",
+      "timestamp": "2025-09-13 04:04:45",
+      "type": "user"
+    },
+    {
+      "AI": "Can I help you with anything else?",
+      "timestamp": "2025-09-13 04:04:46",
+      "type": "ai"
+    },
+    {
+      "User": "what your name",
+      "timestamp": "2025-09-13 04:04:53",
+      "type": "user"
+    },
+    {
+      "AI": "My name is Alexa. By the way, how was your weekend?",
+      "timestamp": "2025-09-13 04:04:54",
+      "type": "ai"
+    },
+    {
+      "User": "My weekend was so good",
+      "timestamp": "2025-09-13 04:05:03",
+      "type": "user"
+    },
+    {
+      "AI": "It sounds like we have a bit of a loop going on there! Can I interrupt for a sec and confirm that you'd like to continue discussing the Business Development Manager role with me, or would you rather take a break?",
+      "timestamp": "2025-09-13 04:05:04",
+      "type": "ai"
+    },
+    {
+      "User": "Let go ahead and discuss about the roles",
+      "timestamp": "2025-09-13 04:05:26",
+      "type": "user"
+    },
+    {
+      "AI": "So, as I mentioned earlier, our Business Development Manager position is looking for someone who excels at building pipeline, contacting decision-makers, researching leads, and managing client servicing. What makes you think you've got what it takes for this role?",
+      "timestamp": "2025-09-13 04:05:27",
+      "type": "ai"
+    },
+    {
+      "User": "Yes I have every experience that you mentioned",
+      "timestamp": "2025-09-13 04:05:55",
+      "type": "user"
+    },
+    {
+      "AI": "I think there might be some repetition there. You were just confirming that you have experience matching our requirements. Let's get down to business and focus on how your skills and experience align with the job description. Can you tell me about a time when you had to overcome an obstacle in your professional growth?",
+      "timestamp": "2025-09-13 04:05:55",
+      "type": "ai"
+    },
+    {
+      "User": "Yes I faced some obstacles in my previous company",
+      "timestamp": "2025-09-13 04:06:25",
+      "type": "user"
+    },
+    {
+      "AI": "It seems like you repeated yourself. To make things clear, you'd like to provide a specific example from your past experience to illustrate how you handled challenges. Would you mind sharing another time when you had to navigate an obstacle in your career?",
+      "timestamp": "2025-09-13 04:06:26",
+      "type": "ai"
+    },
+    {
+      "User": "weil\nleim",
+      "timestamp": "2025-09-13 04:06:28",
+      "type": "user"
+    },
+    {
+      "AI": "It appears like you are translating German words into English. However, I'm still waiting for you to provide a proper example from your experience.\n\nLet's try again. As Business Development Manager, you'd be working closely with clients to understand their needs and develop solutions. Can you walk me through a time when you had to present complex information to a non-technical audience?",
+      "timestamp": "2025-09-13 04:06:29",
+      "type": "ai"
+    },
+    {
+      "User": "I'm a bit nervous can we end the conversation for now",
+      "timestamp": "2025-09-13 04:06:49",
+      "type": "user"
+    },
+    {
+      "AI": "It was nice chatting with you, but don't let nerves get the best of you. We can pick up where we left off tomorrow, okay? Have a great day, and I'll look forward to continuing the conversation then.",
+      "timestamp": "2025-09-13 04:06:50",
+      "type": "ai"
+    }
+  ],
+  "summary": "Here's a summary of the interview conversation between the recruiter (Alexa) and the candidate:\n\n* The candidate, \"lo\", asked to share their name.\n* Alexa asked if they could discuss the Business Development Manager role further.\n* The candidate confirmed their interest in the role and provided general answers to Alexa's questions about their experience and qualifications.\n* Alexa initially tried to drill deeper into the candidate's experiences, but the candidate's responses became repetitive.\n* The candidate attempted to answer Alexa's question about overcoming obstacles by providing a generic answer (\"weel\").\n* Alexa politely interrupted the candidate and clarified expectations for the role before allowing them to respond.\n* The candidate expressed nervousness and asked Alexa to wrap up the conversation for now.\n* Alexa offered to contact the candidate again the next day to continue discussing the role."
+}
