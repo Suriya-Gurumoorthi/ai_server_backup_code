@@ -281,3 +281,4 @@ typescript
 config.ini
 secrets.json
 credentials.json
+.git-credentials
