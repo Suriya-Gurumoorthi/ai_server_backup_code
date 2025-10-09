@@ -10,7 +10,7 @@ torch.cuda.empty_cache()
 pipe = transformers.pipeline(
     model='fixie-ai/ultraVAD', 
     trust_remote_code=True, 
-    device="cuda",
+    device="cpu",
     torch_dtype=torch.float32  # Use float32 for better compatibility
 )
 

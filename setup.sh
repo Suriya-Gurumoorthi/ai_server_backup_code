@@ -180,8 +180,7 @@ main() {
         libsndfile1 \
         libsndfile1-dev \
         portaudio19-dev \
-        python3-pyaudio \
-        onnxruntime
+        python3-pyaudio
     
     print_success "Step 1 completed: APT updated and essentials installed"
     
@@ -272,13 +271,13 @@ main() {
         sudo mv cursor.AppImage /usr/local/bin/cursor
         
         # Create desktop entry
-        cat > ~/.local/share/applications/cursor.desktop << 'EOF'
+        p << 'EOF'
 [Desktop Entry]
 Name=Cursor
 Comment=The AI-first code editor
 Exec=/usr/local/bin/cursor %U
 Icon=cursor
-Terminal=false
+Terminal=falsecat > ~/.local/share/applications/cursor.deskto
 Type=Application
 Categories=Development;TextEditor;
 MimeType=text/plain;text/x-chdr;text/x-csrc;text/x-c++hdr;text/x-c++src;text/x-java;text/x-dsrc;text/x-pascal;text/x-perl;text/x-python;application/x-php;application/x-httpd-php3;application/x-httpd-php4;application/x-httpd-php5;application/javascript;application/json;text/css;text/html;text/xml;text/x-sql;text/x-vb;text/x-yaml;

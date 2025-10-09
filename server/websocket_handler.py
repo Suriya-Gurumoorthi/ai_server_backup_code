@@ -167,8 +167,19 @@ class WebSocketHandler:
             response_text = await model_manager.process_audio(audio_bytes, combined_turns, connection_id)
             self.logger.info(f"AI Response: {response_text[:100]}...")
             
-            # Send response immediately to user
-            await safe_send_response(websocket, response_text, client_address)
+            # Generate TTS audio from the response and send directly
+            self.logger.info(f"Generating TTS audio for {client_address}")
+            tts_audio = await audio_processor.generate_tts_audio(response_text)
+            
+            if tts_audio:
+                # Send audio directly to vicidial bridge (no chunking needed)
+                self.logger.info(f"Sending TTS audio directly to vicidial bridge: {len(tts_audio)} bytes")
+                await websocket.send(tts_audio)
+                self.logger.info(f"Successfully sent TTS audio to {client_address}")
+            else:
+                # Fallback: send text response if TTS fails
+                self.logger.warning(f"TTS failed, sending text response to {client_address}")
+                await safe_send_response(websocket, response_text, client_address)
             
             # Add AI response to history immediately after sending
             transcription_manager.add_ai_transcription(connection_id, response_text)
@@ -308,7 +319,7 @@ class WebSocketHandler:
         await safe_send_response(websocket, response_text, client_address)
     
     async def _process_tts_request(self, websocket, client_address: str, audio_bytes: bytes, connection: Dict[str, Any]):
-        """Process TTS request with parallel processing."""
+        """Process TTS request with parallel processing - sends audio directly to vicidial bridge."""
         connection_id = None
         for conn_id, conn_data in self.active_connections.items():
             if conn_data == connection:
@@ -354,18 +365,14 @@ class WebSocketHandler:
         tts_audio = await audio_processor.generate_tts_audio(response_text)
         
         if tts_audio:
-            # Send audio using chunked streaming
-            success = await audio_processor.send_chunked_audio(websocket, tts_audio, client_address, response_text)
-            if success:
-                self.logger.info(f"Successfully sent chunked TTS response to {client_address}")
-            else:
-                self.logger.error(f"Failed to send chunked TTS response to {client_address}")
-                # Fallback to text only
-                await safe_send_response(websocket, response_text, client_address)
+            # Send audio directly to vicidial bridge (no chunking needed)
+            self.logger.info(f"Sending TTS audio directly to vicidial bridge: {len(tts_audio)} bytes")
+            await websocket.send(tts_audio)
+            self.logger.info(f"Successfully sent TTS audio to {client_address}")
         else:
-            # Fallback to text only
+            # Fallback: send text response if TTS fails
+            self.logger.warning(f"TTS failed, sending text response to {client_address}")
             await safe_send_response(websocket, response_text, client_address)
-            self.logger.warning(f"TTS failed, sent text-only response to {client_address}")
 
 
 # Global WebSocket handler instance
