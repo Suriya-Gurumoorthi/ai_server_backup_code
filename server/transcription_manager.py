@@ -1,4 +1,5 @@
 """
+transcriptions_manager.py
 Transcription Management Module for Ultravox WebSocket Server.
 Handles conversation history, transcription storage, and context management.
 """
@@ -103,7 +104,7 @@ class TranscriptionManager:
     
     def add_ai_transcription(self, connection_id: str, transcription: str) -> bool:
         """
-        Add AI transcription to the conversation history.
+        Add AI transcription, filtering all error states.
         
         Args:
             connection_id: Connection identifier
@@ -115,6 +116,23 @@ class TranscriptionManager:
         if connection_id not in self.active_sessions:
             self.logger.warning(f"No active session found for connection {connection_id}")
             return False
+        
+        # CRITICAL: Filter out ALL error markers and failed validations
+        rejection_markers = [
+            "Error",
+            "[Audio validation failed",
+            "[AUDIO_REJECTED_BY_ULTRAVOX_VALIDATION]",
+            "[INTERNAL_PLACEHOLDER_ERROR]",
+            "[PLACEHOLDER_VALIDATION_FAILED]",
+            "[AUDIO_EMPTY]",
+            "[ULTRAVOX_ERROR",
+            "Text contains too many audio placeholders"
+        ]
+        
+        for marker in rejection_markers:
+            if marker in transcription:
+                self.logger.warning(f"[FILTER] Skipping rejected response: {transcription[:60]}...")
+                return False
         
         session_data = self.active_sessions[connection_id]
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -153,6 +171,8 @@ class TranscriptionManager:
     def get_conversation_context_for_ai(self, connection_id: str) -> List[Dict[str, str]]:
         """
         Get conversation history formatted for AI model context.
+        This version provides clean conversation context without audio placeholders.
+        Ultravox will add its own audio placeholder when processing.
         
         Args:
             connection_id: Connection identifier
@@ -167,34 +187,71 @@ class TranscriptionManager:
         conversation_history = self.active_sessions[connection_id]["conversation_history"]
         ai_context = []
         
-        for entry in conversation_history:
+        # Import sanitization function
+        import re
+        
+        def clean_audio_markers_completely(text):
+            """Remove all audio placeholders completely"""
+            if not text:
+                return ""
+            text = re.sub(r'<\|audio\|?>', '', text)
+            text = re.sub(r'<\|audio\|?', '', text)
+            text = re.sub(r'<\|audio', '', text)
+            text = re.sub(r'\s+', ' ', text)
+            return text.strip()
+        
+        # Process conversation history in pairs (user + assistant)
+        i = 0
+        while i < len(conversation_history):
+            entry = conversation_history[i]
+            
             if entry["type"] == "user":
-                # Clean user content to remove any speaker prefixes or identifiers
+                # Clean user content
                 user_content = entry["User"].strip()
-                # Remove any "Candidate:" or similar prefixes that might cause confusion
+                
+                # Remove any "Candidate:" or similar prefixes
                 if user_content.startswith(("Candidate:", "User:", "I am", "My name is")):
-                    # Extract just the actual content after the prefix
                     parts = user_content.split(":", 1)
                     if len(parts) > 1:
                         user_content = parts[1].strip()
                 
-                ai_context.append({
-                    "role": "user",
-                    "content": user_content
-                })
+                # Remove ALL audio placeholders
+                user_content = clean_audio_markers_completely(user_content)
+                
+                # Only add if there's actual content
+                if user_content:
+                    ai_context.append({
+                        "role": "user",
+                        "content": user_content
+                    })
+                
             elif entry["type"] == "ai":
-                # Clean AI content to ensure consistent identity
+                # Clean AI content
                 ai_content = entry["AI"].strip()
-                # Remove any inconsistent name references that might confuse the model
-                # Replace any "I'm Alex" or "I'm Rachel" with "I'm Alexa" to maintain consistency
-                import re
+                
+                # Remove any inconsistent name references
                 ai_content = re.sub(r"I'm (Alex|Rachel|Emily|Alexa)(?![a-z])", "I'm Alexa", ai_content, flags=re.IGNORECASE)
                 ai_content = re.sub(r"My name is (Alex|Rachel|Emily|Alexa)(?![a-z])", "My name is Alexa", ai_content, flags=re.IGNORECASE)
                 
-                ai_context.append({
-                    "role": "assistant", 
-                    "content": ai_content
-                })
+                # Remove any audio placeholders
+                ai_content = clean_audio_markers_completely(ai_content)
+                
+                # Only add if there's actual content
+                if ai_content:
+                    ai_context.append({
+                        "role": "assistant", 
+                        "content": ai_content
+                    })
+            
+            i += 1
+        
+        # Log the context being sent
+        self.logger.info(f"Conversation context for {connection_id}: {len(ai_context)} turns")
+        for idx, turn in enumerate(ai_context):
+            role = turn.get("role", "unknown")
+            content = turn.get("content", "")
+            audio_count = content.count("<|audio|>")
+            self.logger.info(f"  Context Turn {idx}: role={role}, audio_markers={audio_count}, content='{content[:50]}...'")
         
         return ai_context
     

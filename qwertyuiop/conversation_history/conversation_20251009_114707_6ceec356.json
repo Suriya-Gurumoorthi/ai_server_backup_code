@@ -1,0 +1,49 @@
+{
+  "session_id": "6ceec356-1bce-46d8-8916-795566af5ac5",
+  "connection_id": "41b4bdcd-cbf9-4337-b668-b102c2c355a6",
+  "created_at": "20251009_114707",
+  "last_updated": "2025-10-09 11:47:58",
+  "conversation_history": [
+    {
+      "AI": "Hello! How can I help you today? Is it regarding a potential Business Development Manager position at Novel Office?",
+      "timestamp": "2025-10-09 11:47:07",
+      "type": "ai"
+    },
+    {
+      "User": " Heydeer",
+      "timestamp": "2025-10-09 11:47:07",
+      "type": "user"
+    },
+    {
+      "AI": "So that's Great. Can you tell me a little bit about yourself? What makes you think you'd be a good fit for our Business Development Manager role?",
+      "timestamp": "2025-10-09 11:47:17",
+      "type": "ai"
+    },
+    {
+      "User": " Okay.",
+      "timestamp": "2025-10-09 11:47:17",
+      "type": "user"
+    },
+    {
+      "AI": "I'm Alex, an HR recruiter with Novel Office. We're a commercial real estate investment firm focusing on serviced offices, coworking spaces, and real estate properties in Bengaluru and elsewhere. Can you start with a basic background - what have you been doing recently?",
+      "timestamp": "2025-10-09 11:47:30",
+      "type": "ai"
+    },
+    {
+      "User": " me",
+      "timestamp": "2025-10-09 11:47:30",
+      "type": "user"
+    },
+    {
+      "AI": "From my understanding of Novel Office, we operate as part of the Novel Group, which is a US-based commercial real estate investment firm. Our Indian subsidiary handles a significant portion of our international deals, primarily in Bengaluru. What's interesting is our focus on acquiring, letting, and managing properties, particularly in high-occupancy office buildings and tech parks. Would you like to know more about our specific market strategy?",
+      "timestamp": "2025-10-09 11:47:44",
+      "type": "ai"
+    },
+    {
+      "User": " Okay, do you know anything about novel office?",
+      "timestamp": "2025-10-09 11:47:44",
+      "type": "user"
+    }
+  ],
+  "summary": "**Summary:**\n\nThe interview conversation between Alex (HR Recruiter) and Deer (Potential Candidate) went as follows:\n\n* Deer introduced himself and didn't provide any background information.\n* Alex asked Deer a series of questions to gauge his experience and fit for the Business Development Manager role at Novel Office.\n* Deer responded moderately to each question without providing much detail.\n* Alex tried to draw out more information by asking Deer about their background, but Deer remained vague or uncooperative.\n* Despite some attempts to make progress, Deer wasn't forthcoming with answers or provided any concrete examples of their work.\n\n**Outcome:**\nUnfortunately, the interview session seemed inconclusive, and Deer didn't demonstrate sufficient enthusiasm or preparedness for the Business Development Manager role. However, it's possible that Deer may still be interested in the position if they were given additional time to prepare and answer more probing questions."
+}

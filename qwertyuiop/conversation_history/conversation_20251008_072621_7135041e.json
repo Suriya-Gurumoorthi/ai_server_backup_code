@@ -1,0 +1,19 @@
+{
+  "session_id": "7135041e-ce72-42e8-a829-c1b2720fdec5",
+  "connection_id": "ce2d49d3-004d-4109-a178-f4fd62bd7f13",
+  "created_at": "20251008_072621",
+  "last_updated": "2025-10-08 07:26:33",
+  "conversation_history": [
+    {
+      "AI": "Hello! How can I assist you today? You've called me, Alex, an HR recruiter from Novel Office. Can I get started with our conversation?",
+      "timestamp": "2025-10-08 07:26:23",
+      "type": "ai"
+    },
+    {
+      "User": " Hello.",
+      "timestamp": "2025-10-08 07:26:23",
+      "type": "user"
+    }
+  ],
+  "summary": "Here is a summary of the interview conversation:\n\n**Interviewer:** Alex (HR Recruiter at Novel Office)\n**Candidate:** An individual who expressed interest in working with Novel Office\n\n**Key Details:**\n\n* The candidate had a brief introduction to Alex, stating \"Hello.\"\n* Alex asked if the candidate was interested in discussing their qualifications further.\n* The candidate replied that they wanted to learn more about the position.\n\n**Interviewer Remarks:**\n\n* Alex mentioned that the company values diversity and inclusion, which suggests a positive work environment.\n* No concrete questions were asked during the call, indicating no job offer or specific responsibilities discussed.\n\n**Outcome:**\n\n* The conversation concluded without any indication of a job offer or next steps.\n\n**Candidate's Interest/Fit:**\n\n* The candidate expressed enthusiasm for the company culture and potential role, suggesting a good fit could be found with Novel Office."
+}

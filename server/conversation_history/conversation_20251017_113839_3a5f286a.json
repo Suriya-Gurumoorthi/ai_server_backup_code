@@ -1,0 +1,44 @@
+{
+  "session_id": "3a5f286a-8db1-4bbd-a507-e7180bd83f1a",
+  "connection_id": "5b9ec2f8-389c-4642-8398-ebb39b309f29",
+  "created_at": "20251017_113839",
+  "last_updated": "2025-10-17 11:40:19",
+  "conversation_history": [
+    {
+      "AI": "Hello Alex, thanks for answering my call regarding Business Development Manager positions at Novel Office. How are things going today?",
+      "timestamp": "2025-10-17 11:38:41",
+      "type": "ai"
+    },
+    {
+      "User": " of course yes.",
+      "timestamp": "2025-10-17 11:38:42",
+      "type": "user"
+    },
+    {
+      "AI": "I'm Alexa, an HR recruiter here at Novel Office. We're actually reaching out to explore potential opportunities for Business Development Managers, so I wanted to touch base with you to see how everything is progressing in your career. Can I get back to you within the hour, okay?",
+      "timestamp": "2025-10-17 11:38:59",
+      "type": "ai"
+    },
+    {
+      "User": " Yeah, things are going well done. Thanks for asking. What about you?",
+      "timestamp": "2025-10-17 11:38:59",
+      "type": "user"
+    },
+    {
+      "AI": "Nice to chat with you too! So, just to clarify, we've received several applications for the Business Development Manager position in Bengaluru, and we'd like to move forward with a few candidates. Could you please tell me a bit about yourself, including your background, some relevant experience, and your current employer?",
+      "timestamp": "2025-10-17 11:39:20",
+      "type": "ai"
+    },
+    {
+      "User": " Okay.",
+      "timestamp": "2025-10-17 11:39:20",
+      "type": "user"
+    },
+    {
+      "AI": "Don't worry, I couldn't understand that sentence. Let me try again.\n\nCould you please confirm your name before we continue? And also, would you be available for an in-person meeting or preference for a video call?",
+      "timestamp": "2025-10-17 11:39:32",
+      "type": "ai"
+    }
+  ],
+  "summary": "Here's a summary:\n\n* The recruiter (Alexa) contacted the candidate (Alex) to discuss potential opportunities as a Business Development Manager.\n* Alexa asked open-ended questions to gauge Alex's performance and progress in their career.\n* Unfortunately, there was no direct connection or answer from Alex, indicating they were not prepared to respond or had other commitments.\n* Alexa mentioned receiving several applications for the role but expressed willingness to consider another candidate who has provided more information.\n* Despite technical issues, Alexa encouraged Alex to clarify their identity and preferred communication method for future discussions."
+}

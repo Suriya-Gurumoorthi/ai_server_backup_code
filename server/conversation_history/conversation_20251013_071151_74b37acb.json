@@ -1,0 +1,29 @@
+{
+  "session_id": "74b37acb-1be8-4a7a-8efd-324709becec9",
+  "connection_id": "ba0384b3-07bc-45ff-bbeb-1884a6b72c7d",
+  "created_at": "20251013_071151",
+  "last_updated": "2025-10-13 07:12:28",
+  "conversation_history": [
+    {
+      "AI": "Good morning! This is Alexa from Novel Office, calling Business Development Manager applicants today. Can I get your name? And what's the best time to speak? Is it alright to take just a few minutes?",
+      "timestamp": "2025-10-13 07:11:54",
+      "type": "ai"
+    },
+    {
+      "User": " Hello.",
+      "timestamp": "2025-10-13 07:11:54",
+      "type": "user"
+    },
+    {
+      "AI": "Hi Uria, thank you for reaching out. So, let me confirm - is it a good time to talk now, or would you like to schedule a time that works better for you? By the way, could you also tell me a little bit about yourself, including your background and relevant experience?",
+      "timestamp": "2025-10-13 07:12:16",
+      "type": "ai"
+    },
+    {
+      "User": " Of course, this is right. My name is Surya and thank you for giving me this opportunity.",
+      "timestamp": "2025-10-13 07:12:17",
+      "type": "user"
+    }
+  ],
+  "summary": "Summary:\n\n**Interviewer:** Alexa from Novel Office\n**Time:** [Not specified]\n**Uria (C candidate):** Uria, thank you for reaching out.\n**Uria (C candidate):**\n- Provides her name and asks if it's okay to discuss the call at any time.\n**Uria (C candidate):** The candidate's name is Surya.\n\nIn this summary, we have covered the main points of the interview conversation, which were:\n1. Introduction of the candidate (Surya) as a Business Development Manager applicant.\n2. Confirmation of the time speaking with the candidate.\n3. Brief introduction by the Recruiter, highlighting the benefits of talking to Surya directly.\n4. Surya expresses gratitude for receiving an opportunity to work with the company."
+}

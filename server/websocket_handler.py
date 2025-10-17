@@ -1,4 +1,5 @@
 """
+websocket_handler.py
 WebSocket connection handler module.
 Manages WebSocket connections, message processing, and client state.
 """
@@ -10,8 +11,14 @@ import asyncio
 import websockets
 from typing import Dict, Any
 
-from config import DEFAULT_CONVERSATION_TURNS, AVAILABLE_VOICES
-from utils import safe_send_response, get_connection_info
+from config import (
+    DEFAULT_CONVERSATION_TURNS, AVAILABLE_VOICES,
+    TRANSCRIPTION_MIN_ENERGY, TRANSCRIPTION_MIN_SPEECH_RATIO,
+    TRANSCRIPTION_FALSE_POSITIVES, TRANSCRIPTION_FALSE_POSITIVE_MAX_LENGTH,
+    UNIFIED_AUDIO_VALIDATION, UNIFIED_MIN_ENERGY, UNIFIED_MIN_SPEECH_RATIO,
+    STATIC_GREETING_ENABLED, STATIC_GREETING_MESSAGE
+)
+from utils import safe_send_response, get_connection_info, should_transcribe_audio, unified_audio_validation
 from models import model_manager
 from audio_processor import audio_processor
 from transcription_manager import transcription_manager
@@ -24,6 +31,66 @@ class WebSocketHandler:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.active_connections: Dict[str, Dict[str, Any]] = {}
+    
+    def _should_process_audio(self, audio_bytes: bytes) -> bool:
+        """
+        Unified audio validation for all processing paths.
+        Ensures Whisper and Ultravox are synchronized using the same strict criteria.
+        """
+        if not UNIFIED_AUDIO_VALIDATION:
+            return True  # Skip validation if disabled
+        
+        # Use unified validation with the same strict criteria for both Whisper and Ultravox
+        result = unified_audio_validation(
+            audio_bytes, 
+            min_energy=UNIFIED_MIN_ENERGY, 
+            min_speech_ratio=UNIFIED_MIN_SPEECH_RATIO
+        )
+        
+        # Debug logging
+        self.logger.info(f"[UNIFIED] Audio validation result: {result} (energy={UNIFIED_MIN_ENERGY}, speech_ratio={UNIFIED_MIN_SPEECH_RATIO})")
+        
+        return result
+    
+    async def _send_static_greeting(self, connection_id: str, websocket, client_address: str):
+        """Send the static greeting message immediately after connection."""
+        try:
+            if connection_id not in self.active_connections:
+                self.logger.error(f"Connection {connection_id} not found for greeting")
+                return
+            
+            connection = self.active_connections[connection_id]
+            
+            # Check if greeting has already been sent
+            if connection.get("greeting_sent", False):
+                self.logger.info(f"Greeting already sent for connection {connection_id}")
+                return
+            
+            self.logger.info(f"🎤 Sending static greeting to {client_address}: {STATIC_GREETING_MESSAGE}")
+            
+            # Generate TTS audio for the greeting message
+            greeting_audio = await audio_processor.generate_tts_audio(STATIC_GREETING_MESSAGE)
+            
+            if greeting_audio:
+                # Send the greeting audio directly to the client
+                await websocket.send(greeting_audio)
+                self.logger.info(f"✅ Static greeting audio sent to {client_address} ({len(greeting_audio)} bytes)")
+            else:
+                # Fallback: send text response if TTS fails
+                self.logger.warning(f"TTS failed for greeting, sending text to {client_address}")
+                await safe_send_response(websocket, STATIC_GREETING_MESSAGE, client_address)
+            
+            # Mark greeting as sent
+            connection["greeting_sent"] = True
+            
+            # Add greeting to conversation history if session exists
+            if connection.get("session_created", False):
+                transcription_manager.add_ai_transcription(connection_id, STATIC_GREETING_MESSAGE)
+                self.logger.info(f"Added greeting to conversation history for {connection_id}")
+            
+        except Exception as e:
+            self.logger.error(f"Error sending static greeting to {client_address}: {e}")
+            # Don't fail the connection if greeting fails
     
     def _ensure_session_created(self, connection_id: str) -> bool:
         """Ensure a session is created for the connection if it doesn't exist yet."""
@@ -60,11 +127,16 @@ class WebSocketHandler:
                 "waiting_for_audio": False,
                 "pending_request_type": None,
                 "session_id": None,  # Will be set when first message is processed
-                "session_created": False  # Track if session has been created
+                "session_created": False,  # Track if session has been created
+                "greeting_sent": False  # Track if static greeting has been sent
             }
             
             self.logger.info(f"✅ Client {client_address} connected with ID: {connection_id}")
             self.logger.info(f"📊 Active connections: {len(self.active_connections)}")
+            
+            # Send static greeting message immediately after connection
+            if STATIC_GREETING_ENABLED:
+                await self._send_static_greeting(connection_id, websocket, client_address)
             
             # Process messages from the client
             async for message in websocket:
@@ -115,7 +187,7 @@ class WebSocketHandler:
             return
     
     async def _handle_audio_message(self, connection: Dict[str, Any], audio_bytes: bytes):
-        """Handle binary audio message."""
+        """Handle binary audio message with unified validation."""
         websocket = connection["websocket"]
         client_address = connection["client_address"]
         
@@ -131,7 +203,14 @@ class WebSocketHandler:
             await safe_send_response(websocket, "Error: Connection not found", client_address)
             return
         
-        # Ensure session is created for this connection (only on first message)
+        # CRITICAL FIX: Apply unified validation FIRST, before any AI processing
+        if not self._should_process_audio(audio_bytes):
+            self.logger.info(f"Audio rejected at validation gate - no processing at all")
+            # Don't process, don't log, don't add to history
+            # Optionally send a user-facing message (optional)
+            return
+        
+        # Only after validation passes, proceed with the rest
         if not self._ensure_session_created(connection_id):
             self.logger.error(f"Failed to create session for connection {connection_id}")
             await safe_send_response(websocket, "Error: Failed to create session", client_address)
@@ -153,51 +232,60 @@ class WebSocketHandler:
                 self.logger.warning(f"Unknown request type '{request_type}' for {client_address}")
                 await safe_send_response(websocket, f"Error: Unknown request type '{request_type}'", client_address)
         else:
-            # Direct audio processing (legacy mode) - PARALLEL PROCESSING
-            # -- Critical Path: Direct audio-to-AI response (fastest possible) --
-            self.logger.info(f"Processing audio for AI response for {client_address}")
+            # Direct audio processing
+            self.logger.info(f"[GATE] Audio passed gate validation - processing")
             
-            # Get conversation context from transcription manager
             conversation_context = transcription_manager.get_conversation_context_for_ai(connection_id)
+            combined_turns = []
             
-            # Combine with default system prompt
-            combined_turns = connection["conversation_turns"].copy()
+            if connection["conversation_turns"] and connection["conversation_turns"][0].get("role") == "system":
+                combined_turns.append(connection["conversation_turns"][0])
+            
             combined_turns.extend(conversation_context)
             
+            # Call Ultravox - it will apply TIER 2 validation internally
             response_text = await model_manager.process_audio(audio_bytes, combined_turns, connection_id)
-            self.logger.info(f"AI Response: {response_text[:100]}...")
             
-            # Generate TTS audio from the response and send directly
-            self.logger.info(f"Generating TTS audio for {client_address}")
+            # Check if response is a rejection marker
+            if response_text.startswith("[AUDIO_REJECTED_BY_ULTRAVOX_VALIDATION]"):
+                self.logger.info(f"[ULTRAVOX] Audio rejected after gate - borderline audio")
+                # Don't send anything to user, don't log to history, just return
+                return
+            
+            if response_text.startswith("["):
+                # Other internal errors
+                self.logger.error(f"[ULTRAVOX] Internal error: {response_text}")
+                # Don't expose internal errors to user, don't log
+                return
+            
+            self.logger.info(f"[ULTRAVOX] AI Response: {response_text[:100]}...")
+            
+            # Generate TTS
             tts_audio = await audio_processor.generate_tts_audio(response_text)
             
             if tts_audio:
-                # Send audio directly to vicidial bridge (no chunking needed)
-                self.logger.info(f"Sending TTS audio directly to vicidial bridge: {len(tts_audio)} bytes")
                 await websocket.send(tts_audio)
-                self.logger.info(f"Successfully sent TTS audio to {client_address}")
             else:
-                # Fallback: send text response if TTS fails
-                self.logger.warning(f"TTS failed, sending text response to {client_address}")
                 await safe_send_response(websocket, response_text, client_address)
             
-            # Add AI response to history immediately after sending
+            # Add AI response to history ONLY if it's valid and not a marker
             transcription_manager.add_ai_transcription(connection_id, response_text)
             
-            # -- Background Task: Transcribe and log user input (non-blocking) --
+            # Background transcription for logging
             async def log_transcription(audio, conn_id):
                 try:
                     user_transcription = await model_manager.transcribe_audio(audio, conn_id)
-                    transcription_manager.add_user_transcription(conn_id, user_transcription)
                     
-                    # Check if user provided their name and update session state
-                    self._detect_and_update_candidate_name(conn_id, user_transcription)
-                    
-                    self.logger.info(f"[BACKGROUND] User transcription added for history: {user_transcription[:50]}...")
+                    if user_transcription and len(user_transcription.strip()) > 0:
+                        transcription_lower = user_transcription.strip().lower()
+                        if transcription_lower not in TRANSCRIPTION_FALSE_POSITIVES:
+                            transcription_manager.add_user_transcription(conn_id, user_transcription)
+                            self.logger.info(f"[BACKGROUND] User transcription logged: {user_transcription[:50]}...")
+                        else:
+                            self.logger.info(f"[BACKGROUND] Rejected false positive: '{user_transcription}'")
                 except Exception as e:
-                    self.logger.error(f"[BACKGROUND] Error transcribing audio for logging: {e}")
+                    self.logger.error(f"[BACKGROUND] Transcription error: {e}")
             
-            # Fire off transcription task in background (no await - continues immediately)
             asyncio.create_task(log_transcription(audio_bytes, connection_id))
     
     async def _handle_text_message(self, connection: Dict[str, Any], message: str):
@@ -265,7 +353,7 @@ class WebSocketHandler:
                     break
     
     async def _process_transcribe_request(self, websocket, client_address: str, audio_bytes: bytes, connection: Dict[str, Any]):
-        """Process transcribe request with parallel processing."""
+        """Process transcribe request with parallel processing and audio validation."""
         connection_id = None
         for conn_id, conn_data in self.active_connections.items():
             if conn_data == connection:
@@ -279,12 +367,33 @@ class WebSocketHandler:
         
         self.logger.info(f"Processing transcribe request for {client_address}")
         
+        # VALIDATION: Check if audio is worth transcribing (unified validation)
+        if not self._should_process_audio(audio_bytes):
+            self.logger.info(f"Rejecting transcribe request - audio appears to be noise/silence")
+            await safe_send_response(websocket, "[No speech detected]", client_address)
+            return
+        
         # -- Critical Path: Transcribe user input first, then generate AI response --
         self.logger.info(f"Processing audio for AI response for {client_address}")
         
         # STEP 1: Transcribe user input first (this is critical for proper context)
         self.logger.info(f"Transcribing user input for {client_address}")
         user_transcription = await model_manager.transcribe_audio(audio_bytes, connection_id)
+        
+        # Validate transcription result
+        if not user_transcription or len(user_transcription.strip()) == 0:
+            self.logger.warning(f"Empty transcription result, treating as silence")
+            await safe_send_response(websocket, "[No speech detected]", client_address)
+            return
+        
+        # Check for common false positives
+        transcription_lower = user_transcription.strip().lower()
+        if transcription_lower in TRANSCRIPTION_FALSE_POSITIVES and len(audio_bytes) < 8000:
+            # Likely false positive if transcription is short AND audio is brief
+            self.logger.warning(f"Likely false positive detected: '{user_transcription}' (matched: {transcription_lower}) - rejecting")
+            await safe_send_response(websocket, "[Background noise filtered]", client_address)
+            return
+        
         transcription_manager.add_user_transcription(connection_id, user_transcription)
         
         # Check if user provided their name and update session state
@@ -310,8 +419,15 @@ class WebSocketHandler:
         transcription_manager.add_ai_transcription(connection_id, response_text)
     
     async def _process_features_request(self, websocket, client_address: str, audio_bytes: bytes):
-        """Process features request."""
+        """Process features request with audio validation."""
         self.logger.info(f"Processing features request for {client_address}")
+        
+        # VALIDATION: Check if audio is worth processing (unified validation)
+        if not self._should_process_audio(audio_bytes):
+            self.logger.info(f"Rejecting features request - audio appears to be noise/silence")
+            await safe_send_response(websocket, "[No speech detected - unable to analyze features]", client_address)
+            return
+        
         features_prompt = "Transcribe the audio and also provide speaker gender, emotion, accent, and audio quality."
         turns = [{"role": "system", "content": features_prompt}]
         response_text = await model_manager.process_audio(audio_bytes, turns)
@@ -319,7 +435,7 @@ class WebSocketHandler:
         await safe_send_response(websocket, response_text, client_address)
     
     async def _process_tts_request(self, websocket, client_address: str, audio_bytes: bytes, connection: Dict[str, Any]):
-        """Process TTS request with parallel processing - sends audio directly to vicidial bridge."""
+        """Process TTS request with parallel processing and audio validation."""
         connection_id = None
         for conn_id, conn_data in self.active_connections.items():
             if conn_data == connection:
@@ -333,45 +449,73 @@ class WebSocketHandler:
         
         self.logger.info(f"Processing TTS request for {client_address}")
         
+        # VALIDATION: Check if audio is worth transcribing (unified validation)
+        if not self._should_process_audio(audio_bytes):
+            self.logger.info(f"Rejecting TTS request - audio appears to be noise/silence")
+            # Generate a brief "I didn't catch that" response
+            response_text = "I didn't catch that. Could you please repeat?"
+            tts_audio = await audio_processor.generate_tts_audio(response_text)
+            if tts_audio:
+                await websocket.send(tts_audio)
+            else:
+                await safe_send_response(websocket, response_text, client_address)
+            return
+        
         # -- Critical Path: Transcribe user input first, then generate AI response --
         self.logger.info(f"Processing audio for AI response for {client_address}")
         
-        # STEP 1: Transcribe user input first (this is critical for proper context)
+        # STEP 1: Transcribe user input first
         self.logger.info(f"Transcribing user input for {client_address}")
         user_transcription = await model_manager.transcribe_audio(audio_bytes, connection_id)
+        
+        # Validate transcription result
+        if not user_transcription or len(user_transcription.strip()) == 0:
+            self.logger.warning(f"Empty transcription result")
+            response_text = "I didn't catch that. Could you please repeat?"
+            tts_audio = await audio_processor.generate_tts_audio(response_text)
+            if tts_audio:
+                await websocket.send(tts_audio)
+            else:
+                await safe_send_response(websocket, response_text, client_address)
+            return
+        
+        # Check for common false positives
+        transcription_lower = user_transcription.strip().lower()
+        if transcription_lower in TRANSCRIPTION_FALSE_POSITIVES and len(audio_bytes) < 8000:
+            self.logger.warning(f"Likely false positive: '{user_transcription}' (matched: {transcription_lower}) - requesting clarification")
+            response_text = "I didn't quite catch that. Could you please speak a bit louder?"
+            tts_audio = await audio_processor.generate_tts_audio(response_text)
+            if tts_audio:
+                await websocket.send(tts_audio)
+            else:
+                await safe_send_response(websocket, response_text, client_address)
+            return
+        
         transcription_manager.add_user_transcription(connection_id, user_transcription)
         
-        # Check if user provided their name and update session state
+        # Check if user provided their name
         self._detect_and_update_candidate_name(connection_id, user_transcription)
         
         self.logger.info(f"User transcription: {user_transcription[:50]}...")
         
-        # STEP 2: Get updated conversation context (now includes current user input)
+        # STEP 2-5: Continue with normal processing...
         conversation_context = transcription_manager.get_conversation_context_for_ai(connection_id)
-        
-        # Combine with default system prompt
         combined_turns = connection["conversation_turns"].copy()
         combined_turns.extend(conversation_context)
         
-        # STEP 3: Generate AI response with proper context
         response_text = await model_manager.process_audio(audio_bytes, combined_turns, connection_id)
         self.logger.info(f"AI Response: {response_text[:100]}...")
         
-        # STEP 4: Add AI response to history
         transcription_manager.add_ai_transcription(connection_id, response_text)
         
-        # STEP 5: Generate TTS audio from the response
+        # Generate TTS audio
         self.logger.info(f"Generating TTS audio for {client_address}")
         tts_audio = await audio_processor.generate_tts_audio(response_text)
         
         if tts_audio:
-            # Send audio directly to vicidial bridge (no chunking needed)
-            self.logger.info(f"Sending TTS audio directly to vicidial bridge: {len(tts_audio)} bytes")
             await websocket.send(tts_audio)
             self.logger.info(f"Successfully sent TTS audio to {client_address}")
         else:
-            # Fallback: send text response if TTS fails
-            self.logger.warning(f"TTS failed, sending text response to {client_address}")
             await safe_send_response(websocket, response_text, client_address)
 
 

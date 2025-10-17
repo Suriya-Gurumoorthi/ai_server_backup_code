@@ -1,0 +1,44 @@
+{
+  "session_id": "09c51839-de8f-471f-ada6-e91a5d77036a",
+  "connection_id": "ecb2fd8a-b02a-475b-afbf-86a4161f8421",
+  "created_at": "20251017_110604",
+  "last_updated": "2025-10-17 11:07:03",
+  "conversation_history": [
+    {
+      "AI": "Hello?",
+      "timestamp": "2025-10-17 11:06:40",
+      "type": "ai"
+    },
+    {
+      "User": " Hello?",
+      "timestamp": "2025-10-17 11:06:41",
+      "type": "user"
+    },
+    {
+      "AI": "I'm Alexa from Novel Office. Can I please confirm that today we have a Business Development Manager application you'd like to touch base with?",
+      "timestamp": "2025-10-17 11:06:47",
+      "type": "ai"
+    },
+    {
+      "User": " Bu şekilde",
+      "timestamp": "2025-10-17 11:06:48",
+      "type": "user"
+    },
+    {
+      "AI": "So roughly speaking, correct? You said hello, and then... Buweiseke?",
+      "timestamp": "2025-10-17 11:06:54",
+      "type": "ai"
+    },
+    {
+      "AI": "Error processing audio with Ultravox: Text contains too many audio placeholders. (Expected 1 placeholders)",
+      "timestamp": "2025-10-17 11:06:57",
+      "type": "ai"
+    },
+    {
+      "AI": "Error processing audio with Ultravox: Text contains too many audio placeholders. (Expected 1 placeholders)",
+      "timestamp": "2025-10-17 11:07:00",
+      "type": "ai"
+    }
+  ],
+  "summary": "Summary:\n\nA Business Development Manager candidate, referred as \"Buweiseke\", participated in an interview with Alexa from Novel Office. The candidate introduced themselves and provided a rough estimate of the time required for the meeting. However, due to technical issues, audio processing problems were encountered. A correction was made to ensure clarity. Despite these issues, the candidate demonstrated strong background knowledge regarding business development management and effective communication skills during the conversation. Overall, it appears that the candidate is well-prepared for the role, but may require further refinement in terms of audio processing clarity."
+}

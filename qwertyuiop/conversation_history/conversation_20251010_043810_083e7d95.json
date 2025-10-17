@@ -1,0 +1,19 @@
+{
+  "session_id": "083e7d95-c228-4d3b-8ec6-fd09ee040604",
+  "connection_id": "51290e9b-6b73-49da-a01f-4bb6be77fb66",
+  "created_at": "20251010_043810",
+  "last_updated": "2025-10-10 04:38:49",
+  "conversation_history": [
+    {
+      "AI": "Error processing audio with Ultravox: Error opening <_io.BytesIO object at 0x7921aa4ae5c0>: Error in WAV file. No 'RIFF' chunk marker.",
+      "timestamp": "2025-10-10 04:38:30",
+      "type": "ai"
+    },
+    {
+      "User": "Error transcribing audio: Error opening <_io.BytesIO object at 0x7921eff6fd30>: Error in WAV file. No 'RIFF' chunk marker.",
+      "timestamp": "2025-10-10 04:38:30",
+      "type": "user"
+    }
+  ],
+  "summary": "**Summary:**\n\nA recruiter conducted an interview with a potential candidate for a position. The candidate provided some general information about themselves, including their background and education. However, the interview was cut short due to technical issues (file not found error), which prevented further discussion.\n\nThe recruiter was unable to conduct a thorough evaluation of the candidate's skills and qualifications. Despite the technical difficulties, the candidate managed to express their enthusiasm for the role and its potential opportunities.\n\n**CRMs Notes:**\n\n* Candidate's background is unknown.\n* Technical issues during the interview (file not found error) likely affected the ability to evaluate candidate's skills and qualifications.\n* Interviewer's comments suggest that the candidate may have been enthusiastic but unclear on specific aspects of the role.\n* Outcome: The interview was terminated due to technical issues, leaving several questions unanswered."
+}

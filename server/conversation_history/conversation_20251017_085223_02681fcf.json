@@ -1,0 +1,29 @@
+{
+  "session_id": "02681fcf-751c-489a-9a9f-18c22ad2eaed",
+  "connection_id": "f994f5c9-6a9e-40e4-a175-3f2783a9bfd1",
+  "created_at": "20251017_085223",
+  "last_updated": "2025-10-17 08:53:05",
+  "conversation_history": [
+    {
+      "AI": "Hi Alex, thanks for answering my call. I'm excited to learn more about the Business Development Manager position at Novel Office. Can you tell me a bit about what a typical day looks like in this role? How does it involve building pipeline, conducting outreach, and coordinating with clients?",
+      "timestamp": "2025-10-17 08:52:26",
+      "type": "ai"
+    },
+    {
+      "User": " Yes, this is a good time to talk. Go ahead.",
+      "timestamp": "2025-10-17 08:52:26",
+      "type": "user"
+    },
+    {
+      "AI": "I'd love to have that confirmed. So, what kind of background did you have before joining Novel Office? Did you have any prior experience in business development or a related field? And could you tell me how many years of experience you have in your own words?",
+      "timestamp": "2025-10-17 08:52:51",
+      "type": "ai"
+    },
+    {
+      "User": " It is quite good to go with that.",
+      "timestamp": "2025-10-17 08:52:51",
+      "type": "user"
+    }
+  ],
+  "summary": "In this interview conversation, an interviewer asked the candidate, Alex, about her background, expectations from the Business Development Manager position at Novel Office, and her previous experience.\n\nAlex provided general information about her background, stating she had prior experience before joining Novel Office but didn't elaborate on the specific roles or industries she worked in.\n\nThe interviewer then turned the focus back to Alex, asking about her qualifications and adaptability to the role and company culture. The candidate responded briefly, indicating she was familiar with the concept of business development and was eager to grow with Novel Office."
+}

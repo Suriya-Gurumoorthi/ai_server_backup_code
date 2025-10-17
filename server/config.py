@@ -1,4 +1,5 @@
 """
+config.py
 Configuration module for the Ultravox WebSocket server.
 Contains all configuration constants, settings, and default values.
 """
@@ -97,3 +98,56 @@ DEFAULT_CONVERSATION_TURNS1 = [
 
 # Available TTS voices
 AVAILABLE_VOICES = ["default", "multilingual", "indian", "us", "uk"]
+
+# ==================== TRANSCRIPTION QUALITY CONFIGURATION ====================
+# These parameters help prevent false transcriptions from background noise
+
+# Minimum RMS energy for transcription (higher = stricter)
+# Default: 1500 (much higher than VAD_ENERGY_THRESHOLD to avoid false positives)
+TRANSCRIPTION_MIN_ENERGY = 1500
+
+# Minimum ratio of speech-like samples required (0.0 to 1.0)
+# Default: 0.25 (25% of samples must look like speech - much stricter)
+TRANSCRIPTION_MIN_SPEECH_RATIO = 0.25
+
+# Minimum audio duration to consider for transcription (milliseconds)
+# Very short audio clips are more likely to be noise
+TRANSCRIPTION_MIN_DURATION_MS = 300  # 300ms minimum
+
+# Known false positive words to filter out
+# These are common Whisper hallucinations for background noise
+TRANSCRIPTION_FALSE_POSITIVES = [
+    "you", "thank you", "thanks", "bye", "goodbye",
+    "okay", "ok", "yeah", "yes", "no", "um", "uh"
+]
+
+# Maximum length for false positive filtering (characters)
+# If transcription is shorter than this AND matches false positive, reject it
+TRANSCRIPTION_FALSE_POSITIVE_MAX_LENGTH = 50
+
+# Enable detailed transcription validation logging
+TRANSCRIPTION_DEBUG_LOGGING = True
+
+# ============================================================================
+# THREE-TIER ADAPTIVE VALIDATION STRATEGY
+# ============================================================================
+
+# TIER 1: RELAXED for WebSocket validation gate (let borderline audio through)
+# These are intentionally loose to avoid rejecting natural speech
+UNIFIED_AUDIO_VALIDATION = True
+UNIFIED_MIN_ENERGY = 900          # Down from 1500 - allow quieter speakers
+UNIFIED_MIN_SPEECH_RATIO = 0.20    # Down from 0.25 - allow slower speakers
+
+# TIER 2: MEDIUM for Ultravox processing (moderate filter)
+# If audio passes gate but is borderline, Ultravox should be cautious
+ULTRAVOX_MIN_ENERGY = 1100
+ULTRAVOX_MIN_SPEECH_RATIO = 0.30
+
+# TIER 3: STRICT for Whisper logging (prevent hallucinations)
+# Whisper is prone to false positives on garbage audio
+TRANSCRIPTION_MIN_ENERGY = 1200     # Keep high - prevent Whisper hallucinations
+TRANSCRIPTION_MIN_SPEECH_RATIO = 0.35
+
+# Static greeting configuration
+STATIC_GREETING_ENABLED = True
+STATIC_GREETING_MESSAGE = "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?"

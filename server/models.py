@@ -1,4 +1,5 @@
 """
+models.py
 AI model management module for Ultravox and Piper TTS.
 Handles model loading, initialization, and inference operations.
 """
@@ -31,49 +32,126 @@ from prompt_logger import prompt_logger
 
 
 def sanitize_audio_placeholders(text: str) -> str:
-    """Remove all audio placeholders from text to prevent Ultravox pipeline errors"""
+    """Remove ALL audio placeholders from text"""
     if not text:
         return text
-    return text.replace('<|audio|>', '').replace('<|audio|', '').strip()
+    
+    import re
+    # Remove all variations of audio placeholders
+    text = re.sub(r'<\|audio\|?>', '', text)
+    text = re.sub(r'<\|audio\|?', '', text)
+    text = re.sub(r'<\|audio', '', text)
+    
+    # Clean up multiple spaces
+    text = re.sub(r'\s+', ' ', text)
+    
+    return text.strip()
 
 
 def ensure_one_audio_placeholder_last_user(turns: List[Dict[str, str]]) -> List[Dict[str, str]]:
     """
-    Removes all audio placeholders from all turns except the last user turn,
-    and ensures only one <|audio|> at the end.
+    FIXED VERSION: Ensures exactly ONE <|audio|> placeholder in last USER turn.
+    
+    Critical fix: Must handle conversations with MULTIPLE turns correctly.
+    Previous logic was breaking on longer conversations (5+ turns).
     """
     if not turns:
         return turns
     
-    # Find the last user turn
+    logger = logging.getLogger(__name__)
+    
+    # STEP 1: Clean ALL audio placeholders from ALL turns (critical!)
+    for i, turn in enumerate(turns):
+        if "content" in turn:
+            original_content = turn["content"]
+            turn["content"] = sanitize_audio_placeholders(turn["content"])
+            
+            if original_content != turn["content"]:
+                logger.debug(f"Turn {i}: Removed audio placeholders")
+    
+    # STEP 2: Verify all placeholders are gone
+    total_markers = sum(t.get("content", "").count("<|audio|>") for t in turns)
+    if total_markers > 0:
+        logger.error(f"CRITICAL: After sanitization, still found {total_markers} markers!")
+        # This shouldn't happen, but if it does, log for debugging
+        for i, turn in enumerate(turns):
+            content = turn.get("content", "")
+            if "<|audio|>" in content:
+                logger.error(f"Turn {i} still has marker: {content[:100]}")
+    
+    # STEP 3: Find the LAST user turn (not first, not last assistant)
     last_user_idx = -1
     for i in range(len(turns) - 1, -1, -1):
         if turns[i].get("role") == "user":
             last_user_idx = i
             break
     
+    logger.debug(f"Found last user turn at index: {last_user_idx}")
+    
+    # STEP 4: Handle case where no user turns exist
     if last_user_idx == -1:
-        # No user turns found, return as is
+        logger.warning("No user turns found - adding new user turn")
+        turns.append({
+            "role": "user",
+            "content": "[Audio input] <|audio|>"
+        })
         return turns
     
-    cleaned = []
-    for idx, turn in enumerate(turns):
-        role = turn.get("role", "")
-        content = turn.get("content", "")
-
-        # Remove all existing placeholders
-        content = sanitize_audio_placeholders(content)
-        
-        if role == "user" and idx == last_user_idx:
-            # Only the last user turn gets the audio marker
-            content = content + " <|audio|>"
-        
-        cleaned.append({
-            "role": role,
-            "content": content
-        })
+    # STEP 5: Add ONE placeholder to last user turn
+    last_user_content = turns[last_user_idx].get("content", "").strip()
+    if not last_user_content:
+        last_user_content = "[Audio input]"
     
-    return cleaned
+    # ADD placeholder to last user turn (NOT after, but AS PART OF the content)
+    turns[last_user_idx]["content"] = last_user_content + " <|audio|>"
+    
+    logger.debug(f"Added placeholder to user turn {last_user_idx}: '{turns[last_user_idx]['content']}'")
+    
+    # STEP 6: Final verification - must have EXACTLY 1 marker
+    total_markers = sum(t.get("content", "").count("<|audio|>") for t in turns)
+    logger.info(f"Final marker count: {total_markers}")
+    
+    if total_markers != 1:
+        logger.error(f"FATAL: Expected 1 marker, got {total_markers}!")
+        logger.error("Conversation structure:")
+        for i, turn in enumerate(turns):
+            role = turn.get("role", "?")
+            content = turn.get("content", "")[:60]
+            markers = content.count("<|audio|>")
+            logger.error(f"  Turn {i}: role={role}, markers={markers}, content='{content}...'")
+        
+        # EMERGENCY FALLBACK: Rebuild from scratch
+        logger.warning("EMERGENCY FALLBACK: Rebuilding conversation structure")
+        # Keep only system prompt and user content, rebuild
+        new_turns = []
+        for turn in turns:
+            if turn.get("role") == "system":
+                new_turns.append(turn)
+        
+        # Add user/assistant alternating without markers
+        for turn in turns:
+            if turn.get("role") in ["user", "assistant"]:
+                new_turns.append(turn)
+        
+        # Add placeholder to last user
+        for i in range(len(new_turns) - 1, -1, -1):
+            if new_turns[i].get("role") == "user":
+                content = new_turns[i].get("content", "").strip()
+                new_turns[i]["content"] = content + " <|audio|>"
+                break
+        
+        final_markers = sum(t.get("content", "").count("<|audio|>") for t in new_turns)
+        logger.warning(f"After emergency rebuild: {final_markers} markers")
+        
+        if final_markers == 1:
+            logger.warning("Emergency rebuild successful!")
+            return new_turns
+        else:
+            logger.error("Emergency rebuild FAILED!")
+            # Last resort: return error to caller
+            return turns
+    
+    return turns
 
 
 class ModelManager:
@@ -185,41 +263,73 @@ class ModelManager:
         return True
     
     async def process_audio(self, audio_data: bytes, conversation_turns: List[Dict[str, str]], connection_id: str = None) -> str:
-        """Process audio input using Ultravox pipeline."""
+        """Process audio input using Ultravox pipeline with adaptive validation."""
         if not self.ultravox_pipeline:
             raise RuntimeError("Ultravox pipeline not loaded")
         
         try:
             import librosa
             import io
+            from utils import is_valid_speech_audio
+            from config import ULTRAVOX_MIN_ENERGY, ULTRAVOX_MIN_SPEECH_RATIO
             
-            # Load audio from bytes
+            # Load audio
             audio_stream = io.BytesIO(audio_data)
             audio, sr = librosa.load(audio_stream, sr=16000)
             self.logger.info(f"Loaded audio: {len(audio)} samples at {sr}Hz")
             
             if len(audio) == 0:
-                return "Error: Audio file contains no data"
+                return "[AUDIO_EMPTY]"
             
-            # Ensure proper audio placeholder format
+            # TIER 2 VALIDATION
+            is_valid_audio, stats = is_valid_speech_audio(
+                audio_data,
+                min_energy_threshold=ULTRAVOX_MIN_ENERGY,
+                min_speech_ratio=ULTRAVOX_MIN_SPEECH_RATIO
+            )
+            
+            if not is_valid_audio:
+                reason = stats.get('reason', 'unknown')
+                self.logger.warning(f"[ULTRAVOX] Audio rejected: {reason} (energy={stats.get('rms_energy', 0):.1f}, speech_ratio={stats.get('speech_ratio', 0):.3f})")
+                return "[AUDIO_REJECTED_BY_ULTRAVOX_VALIDATION]"
+            
+            # FIX: Reset conversation_turns to be a mutable copy
+            conversation_turns = list(conversation_turns)  # Make copy
+            
+            # Ensure proper placeholder format - CRITICAL FOR LONG CONVERSATIONS
             conversation_turns = ensure_one_audio_placeholder_last_user(conversation_turns)
             
-            # Ensure system prompt is always first and consistent
+            # Verify exactly 1 placeholder before sending to Ultravox
+            total_audio_markers = sum(turn.get("content", "").count("<|audio|>") for turn in conversation_turns)
+            
+            if total_audio_markers != 1:
+                self.logger.error(f"CRITICAL: Audio placeholder mismatch! Expected 1, found {total_audio_markers}")
+                self.logger.error("Turn structure before sending:")
+                for idx, turn in enumerate(conversation_turns):
+                    role = turn.get("role", "?")
+                    content = turn.get("content", "")
+                    markers = content.count("<|audio|>")
+                    self.logger.error(f"  Turn {idx}: role={role}, markers={markers}, content='{content[:80]}'")
+                
+                return "[PLACEHOLDER_VALIDATION_FAILED]"
+            
+            # Ensure system prompt
             if not conversation_turns or conversation_turns[0].get("role") != "system":
-                # Add system prompt if missing
                 system_prompt = {
                     "role": "system",
-                    "content": """You are Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Speak naturally and professionally, as in a real phone call. Keep responses short, 1–2 sentences at a time. Do not use lists, bullets, emojis, stage directions, or overly formal prose; this is a live voice conversation. Always maintain your identity as Alexa and address the candidate appropriately."""
+                    "content": "You are Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Speak naturally and professionally, as in a real phone call. Keep responses short, 1–2 sentences at a time. Do not use lists, bullets, emojis, stage directions, or overly formal prose; this is a live voice conversation. Always maintain your identity as Alexa and address the candidate appropriately."
                 }
                 conversation_turns = [system_prompt] + conversation_turns
             
-            # Log the prompt being sent to Ultravox
+            self.logger.info(f"[ULTRAVOX] Sending {len(conversation_turns)} turns to pipeline")
+            for idx, turn in enumerate(conversation_turns):
+                role = turn.get("role", "?")
+                content = turn.get("content", "")
+                markers = content.count("<|audio|>")
+                self.logger.info(f"  Turn {idx}: role={role}, markers={markers}, content='{content[:70]}'")
+            
             if connection_id:
-                prompt_logger.log_ultravox_prompt(
-                    connection_id=connection_id,
-                    audio_data=audio_data,
-                    conversation_turns=conversation_turns
-                )
+                prompt_logger.log_ultravox_prompt(connection_id, audio_data, conversation_turns)
             
             # Run inference in thread executor
             loop = asyncio.get_event_loop()
@@ -232,23 +342,21 @@ class ModelManager:
                 }, max_new_tokens=2000, do_sample=True, temperature=0.7)
             )
             
-            self.logger.info("Ultravox inference completed in thread executor")
+            self.logger.info("Ultravox inference completed successfully")
             response_text = self._extract_response_text(result)
             
-            # Log the response
             if connection_id:
                 prompt_logger.log_ultravox_prompt(
-                    connection_id=connection_id,
-                    audio_data=audio_data,
-                    conversation_turns=conversation_turns,
-                    response=response_text
+                    connection_id, audio_data, conversation_turns, response_text
                 )
             
             return response_text
             
         except Exception as e:
             self.logger.error(f"Ultravox pipeline error: {e}")
-            return f"Error processing audio with Ultravox: {str(e)}"
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            return f"[ULTRAVOX_ERROR: {str(e)}]"
     
     def _extract_response_text(self, result: Any) -> str:
         """Extract text response from Ultravox pipeline result."""

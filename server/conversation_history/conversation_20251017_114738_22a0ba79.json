@@ -1,0 +1,24 @@
+{
+  "session_id": "22a0ba79-6141-4b55-ba22-44365723d4db",
+  "connection_id": "35e8616b-b76b-46a0-9109-5715bf8b563e",
+  "created_at": "20251017_114738",
+  "last_updated": "2025-10-17 11:48:14",
+  "conversation_history": [
+    {
+      "AI": "\"Thank you for answering! To confirm, I'm Alex from Novel Office, and I'm calling to explore potential openings as a Business Development Manager. Can you please tell me a little bit about yourself? What makes you interested in this role?\"",
+      "timestamp": "2025-10-17 11:47:40",
+      "type": "ai"
+    },
+    {
+      "User": " Yes, it is a good time. Can you go ahead?",
+      "timestamp": "2025-10-17 11:47:40",
+      "type": "user"
+    },
+    {
+      "AI": "\"So, just to confirm, you'd like to join our Business Development team, focusing on building pipelines and working closely with clients to provide tailored solutions. Is that correct?\"",
+      "timestamp": "2025-10-17 11:47:59",
+      "type": "ai"
+    }
+  ],
+  "summary": "Summary:\n\n* The recruiter, Alex from Novel Office, called to discuss a potential Business Development Manager position.\n* The candidate expressed interest in the role and provided some information about themselves.\n* Alex confirmed their interest and discussed the job requirements, including building client pipelines and working with them to provide tailored solutions.\n\nOutcome:\nThe interview was productive and led to an in-depth discussion about the candidate's qualifications and fit for the role.\n\nCandidate's Interest/Fit:\nThe candidate showed enthusiasm for the business development role and demonstrated some knowledge of the industry. They also seemed to have relevant skills and experience, which could be beneficial for the position. However, further clarification on specific aspects of the role would be necessary to assess their fit more accurately."
+}

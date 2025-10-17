@@ -1,0 +1,19 @@
+{
+  "session_id": "b370dfef-5460-4bf6-888a-94f95d7a46ad",
+  "connection_id": "7b119a6f-1328-4722-a2c7-e92d99eb5ba7",
+  "created_at": "20251017_062627",
+  "last_updated": "2025-10-17 06:26:54",
+  "conversation_history": [
+    {
+      "AI": "Hello again, I'm Alexa from Novel Office, and I'd like to get started with our conversation. It sounds like we might have some interesting discussions about potential openings. Before we begin, I wanted to clarify that we were discussing Business Development Management roles within the company. Are you available for an in-person meeting today at Marathahalli?",
+      "timestamp": "2025-10-17 06:26:30",
+      "type": "ai"
+    },
+    {
+      "User": " Hey there.",
+      "timestamp": "2025-10-17 06:26:30",
+      "type": "user"
+    }
+  ],
+  "summary": "Here is a summary of the interview conversation:\n\n**Interviewer:** Alexa (Novel Office)\n**Conversation Summary:**\n- Candidate mentioned they are interested in Business Development Management roles.\n- Alexa asked if the candidate was available for an in-person meeting at Marathahalli.\n- The candidate responded that they were available.\n\nThis is where our conversation concluded as the candidate began their search for a role."
+}

@@ -2,6 +2,7 @@ import transformers
 import torch
 import librosa
 import os
+import time
 
 # Clear GPU cache first
 torch.cuda.empty_cache()
@@ -46,10 +47,19 @@ token_id = pipe.tokenizer.convert_tokens_to_ids("<|eot_id|>")
 if token_id is None or token_id == pipe.tokenizer.unk_token_id:
   raise RuntimeError("<|eot_id|> not found in tokenizer.")
 
+# Start timing for probability calculation
+start_time = time.time()
+
 audio_logits = logits[0, audio_pos, :]
 audio_probs = torch.softmax(audio_logits.float(), dim=-1)
 eot_prob_audio = audio_probs[token_id].item()
+
+# End timing for probability calculation
+end_time = time.time()
+probability_time = end_time - start_time
+
 print(f"P(<|eot_id|>) = {eot_prob_audio:.6f}")
+print(f"Time taken for probability calculation: {probability_time:.6f} seconds")
 threshold = 0.1
 if eot_prob_audio > threshold:
   print("Is End of Turn")

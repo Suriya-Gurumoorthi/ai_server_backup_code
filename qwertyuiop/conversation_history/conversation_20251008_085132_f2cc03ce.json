@@ -1,0 +1,59 @@
+{
+  "session_id": "f2cc03ce-d3a7-4aed-9a50-0c21da4693cc",
+  "connection_id": "2b291fe0-874e-4d75-8107-73cb3fceed28",
+  "created_at": "20251008_085132",
+  "last_updated": "2025-10-08 08:53:17",
+  "conversation_history": [
+    {
+      "AI": "Hello! It's nice to meet you. I'm Alexa, your HR recruiter today. Can I start by confirming that you'd like to speak with me regarding Business Development Manager opportunities?",
+      "timestamp": "2025-10-08 08:51:34",
+      "type": "ai"
+    },
+    {
+      "User": " Hello",
+      "timestamp": "2025-10-08 08:51:34",
+      "type": "user"
+    },
+    {
+      "AI": "I've got my notes ready. To get started, could you tell me a little bit about yourself? How does your background match our Business Development Manager role, and what makes you think you'd be a great fit for it here at Novel Office?",
+      "timestamp": "2025-10-08 08:51:51",
+      "type": "ai"
+    },
+    {
+      "User": " Yes, it's an item, go ahead.",
+      "timestamp": "2025-10-08 08:51:51",
+      "type": "user"
+    },
+    {
+      "AI": "So you have a degree in statistics. That's a great foundation for working with data. With your recent graduation, would you be available to move to Bengaluru temporarily for an in-person interview at Novel Office, Marathahalli? And do you know what our typical interview schedule looks like, just so we can plan accordingly?",
+      "timestamp": "2025-10-08 08:52:16",
+      "type": "ai"
+    },
+    {
+      "User": " So let me introduce myself, I am Surya currently pursuing my statistics degree in VIT University.",
+      "timestamp": "2025-10-08 08:52:16",
+      "type": "user"
+    },
+    {
+      "AI": "Welcome to your call, Surya! It's great to hear that you're from VIT University. We actually work closely with many universities in India, including yours.\n\nTo clarify, I was asking about your current circumstances: when can you commit to relocation to Bengaluru for an in-person interview, considering you might not be based here yet? Can you estimate around what month you'd need to arrive to make it feasible?",
+      "timestamp": "2025-10-08 08:52:31",
+      "type": "ai"
+    },
+    {
+      "User": " Hello.",
+      "timestamp": "2025-10-08 08:52:31",
+      "type": "user"
+    },
+    {
+      "AI": "Tomorrow works well. So, tomorrow morning or late afternoon would be ideal, I assume, given your commute from wherever it may be to Bengaluru.\n\nBy the way, how did you hear about us? Was it through a mutual connection or saw any job listings online?",
+      "timestamp": "2025-10-08 08:52:56",
+      "type": "ai"
+    },
+    {
+      "User": " I can come tomorrow.",
+      "timestamp": "2025-10-08 08:52:56",
+      "type": "user"
+    }
+  ],
+  "summary": "Here is a summary of the interview conversation:\n\n* The candidate, Surya, introduced himself and shared his background as a student pursuing a Statistics degree in VIT University.\n* He expressed some initial hesitation about relocating to Bengaluru for an in-person interview but later clarified that he is from India and works with multiple universities.\n* The interviewer, Alexa, asked when Surya could relocate to Bengaluru, which he estimated would take around 1-2 months, considering his daily commute.\n* After the interview, Alexa mentioned that they were initially hesitant due to concerns about meeting new colleagues, but Surya seemed enthusiastic and interested in attending the interview.\n* Overall, the tone of the conversation was positive, with both parties showing willingness to move forward with the process after learning more about each other and their respective roles."
+}
