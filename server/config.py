@@ -135,13 +135,13 @@ TRANSCRIPTION_DEBUG_LOGGING = True
 # TIER 1: RELAXED for WebSocket validation gate (let borderline audio through)
 # These are intentionally loose to avoid rejecting natural speech
 UNIFIED_AUDIO_VALIDATION = True
-UNIFIED_MIN_ENERGY = 900          # Down from 1500 - allow quieter speakers
-UNIFIED_MIN_SPEECH_RATIO = 0.20    # Down from 0.25 - allow slower speakers
+UNIFIED_MIN_ENERGY = 500          # Much lower - allow very quiet speakers
+UNIFIED_MIN_SPEECH_RATIO = 0.15    # Much lower - allow very slow speakers
 
 # TIER 2: MEDIUM for Ultravox processing (moderate filter)
 # If audio passes gate but is borderline, Ultravox should be cautious
-ULTRAVOX_MIN_ENERGY = 1100
-ULTRAVOX_MIN_SPEECH_RATIO = 0.30
+ULTRAVOX_MIN_ENERGY = 800          # Lower for slow speech
+ULTRAVOX_MIN_SPEECH_RATIO = 0.25    # Lower for slow speech
 
 # TIER 3: STRICT for Whisper logging (prevent hallucinations)
 # Whisper is prone to false positives on garbage audio

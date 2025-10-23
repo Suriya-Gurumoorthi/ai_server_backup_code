@@ -109,11 +109,11 @@ def is_valid_speech_audio(audio_bytes: bytes,
             "samples": len(audio_array)
         }
         
-        # Validation criteria
+        # Validation criteria - made more lenient for slow speech
         has_sufficient_energy = rms_energy > min_energy_threshold
-        has_sufficient_activity = zcr > 0.01  # At least 1% zero crossings
+        has_sufficient_activity = zcr > 0.005  # Lowered from 0.01 - allow slower speech
         has_sufficient_speech = speech_ratio > min_speech_ratio
-        is_not_mostly_zeros = nonzero_ratio > 0.2  # At least 20% non-zero
+        is_not_mostly_zeros = nonzero_ratio > 0.1  # Lowered from 0.2 - allow quieter speech
         
         is_valid = (has_sufficient_energy and 
                    has_sufficient_activity and 

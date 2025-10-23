@@ -1,0 +1,30 @@
+{
+  "kpi_session_id": "d02b7a70-b571-4f43-920e-70943d8ff33b",
+  "connection_id": "7239bb95-0932-4842-8c88-fa9e4f25acc1",
+  "linked_session_id": "1d561a3f-6aaf-4c72-9078-b35d2a02d1a9",
+  "created_at": "20251022_115139",
+  "call_start_time": "2025-10-22 11:51:39",
+  "last_updated": "2025-10-22 11:51:42",
+  "kpi_status": {
+    "introduction": false,
+    "name_asked": false,
+    "experience_asked": false,
+    "relevant_experience_asked": false,
+    "expected_ctc_asked": false,
+    "current_ctc_asked": false,
+    "notice_period_asked": false,
+    "location_asked": false,
+    "skills_asked": false
+  },
+  "extracted_data": {
+    "name": null,
+    "experience_years": null,
+    "relevant_experience": null,
+    "expected_ctc": null,
+    "current_ctc": null,
+    "notice_period": null,
+    "location": null,
+    "skills": []
+  },
+  "conversation_flow": []
+}

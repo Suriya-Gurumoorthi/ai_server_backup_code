@@ -291,13 +291,31 @@ class ModelManager:
             if not is_valid_audio:
                 reason = stats.get('reason', 'unknown')
                 self.logger.warning(f"[ULTRAVOX] Audio rejected: {reason} (energy={stats.get('rms_energy', 0):.1f}, speech_ratio={stats.get('speech_ratio', 0):.3f})")
+                
+                # CRITICAL FIX: Clean up any existing audio placeholders from conversation context
+                # This prevents accumulation of placeholders when audio is repeatedly rejected
+                self._cleanup_audio_placeholders(conversation_turns)
+                
                 return "[AUDIO_REJECTED_BY_ULTRAVOX_VALIDATION]"
             
             # FIX: Reset conversation_turns to be a mutable copy
             conversation_turns = list(conversation_turns)  # Make copy
             
-            # Ensure proper placeholder format - CRITICAL FOR LONG CONVERSATIONS
-            conversation_turns = ensure_one_audio_placeholder_last_user(conversation_turns)
+            # Check if conversation_turns already has proper structure (from get_conversation_context_for_ai)
+            # If so, we need to add audio placeholder to the last user turn
+            has_audio_placeholders = any("<|audio|>" in turn.get("content", "") for turn in conversation_turns)
+            
+            if not has_audio_placeholders:
+                # This is processed context from get_conversation_context_for_ai, add a NEW user turn with placeholder
+                # We should always add a new user turn for the current audio input, not modify existing turns
+                conversation_turns.append({
+                    "role": "user",
+                    "content": "[Audio input] <|audio|>"
+                })
+                self.logger.info("Added new user turn with audio placeholder to processed context")
+            else:
+                # This is raw conversation data, use the existing function
+                conversation_turns = ensure_one_audio_placeholder_last_user(conversation_turns)
             
             # Verify exactly 1 placeholder before sending to Ultravox
             total_audio_markers = sum(turn.get("content", "").count("<|audio|>") for turn in conversation_turns)
@@ -311,7 +329,24 @@ class ModelManager:
                     markers = content.count("<|audio|>")
                     self.logger.error(f"  Turn {idx}: role={role}, markers={markers}, content='{content[:80]}'")
                 
-                return "[PLACEHOLDER_VALIDATION_FAILED]"
+                # CRITICAL FIX: Clean up placeholders and try to fix the issue
+                self.logger.warning("Attempting to fix audio placeholder mismatch by cleaning up...")
+                self._cleanup_audio_placeholders(conversation_turns)
+                
+                # Re-add exactly one placeholder by adding a new user turn
+                conversation_turns.append({
+                    "role": "user",
+                    "content": "[Audio input] <|audio|>"
+                })
+                self.logger.info("Fixed: Added new user turn with single audio placeholder")
+                
+                # Verify fix
+                total_audio_markers = sum(turn.get("content", "").count("<|audio|>") for turn in conversation_turns)
+                if total_audio_markers != 1:
+                    self.logger.error(f"Failed to fix audio placeholder issue. Still have {total_audio_markers} placeholders")
+                    return "[PLACEHOLDER_VALIDATION_FAILED]"
+                else:
+                    self.logger.info("✅ Successfully fixed audio placeholder issue")
             
             # Ensure system prompt
             if not conversation_turns or conversation_turns[0].get("role") != "system":
@@ -676,6 +711,42 @@ class ModelManager:
             )
         
         return summary_text
+
+    def _cleanup_audio_placeholders(self, conversation_turns: List[Dict[str, str]]) -> None:
+        """
+        Clean up audio placeholders from conversation turns to prevent accumulation
+        when audio is rejected by validation.
+        
+        Args:
+            conversation_turns: List of conversation turns to clean up
+        """
+        if not conversation_turns:
+            return
+            
+        self.logger.info("Cleaning up audio placeholders from conversation context")
+        
+        for turn in conversation_turns:
+            content = turn.get("content", "")
+            if "<|audio|>" in content:
+                # Remove all audio placeholders from this turn
+                cleaned_content = content.replace("<|audio|>", "").strip()
+                
+                # If content becomes empty after cleanup, set a default
+                if not cleaned_content:
+                    if turn.get("role") == "user":
+                        cleaned_content = "[Audio input]"
+                    else:
+                        cleaned_content = "[Response]"
+                
+                turn["content"] = cleaned_content
+                self.logger.info(f"Cleaned audio placeholder from {turn.get('role', 'unknown')} turn: '{content[:50]}...' -> '{cleaned_content[:50]}...'")
+        
+        # Verify cleanup
+        total_placeholders = sum(turn.get("content", "").count("<|audio|>") for turn in conversation_turns)
+        if total_placeholders == 0:
+            self.logger.info("✅ Successfully cleaned all audio placeholders")
+        else:
+            self.logger.warning(f"⚠️ Still found {total_placeholders} audio placeholders after cleanup")
 
     def shutdown(self):
         """Shutdown the model manager and clean up resources."""

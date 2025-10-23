@@ -1,0 +1,14 @@
+{
+  "session_id": "ed733dfa-ed72-4617-aaa0-4371830ea359",
+  "connection_id": "3d333045-a54d-4d28-a0b6-a71016ccca04",
+  "created_at": "20251022_104837",
+  "last_updated": "2025-10-22 10:48:37",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-22 10:48:37",
+      "type": "ai"
+    }
+  ],
+  "summary": "Here is a summary of the interview conversation:\n\nRecruiter (Alexa): Introduced herself as an HR recruiter from Novel Office.\n\nApplicant: Provided her resume detailing her background.\n\nRecruiter (Alexa):\n- Asked about key skills required for the role.\n- Inquired about applicant experience with CRM software.\n- Highlighted specific strengths such as data analysis and customer service expertise.\n- Discussed company culture and values.\n- Asked about applicant's experience working with CRM systems.\n- Suggested potential projects or tasks she could assist them with.\nOutcome: The conversation was productive, with some discussion on key aspects of the job description and applicant's relevant experience.\nCandidate's Interest/Fit: The applicant showed enthusiasm for the position, highlighting relevant skills and experience. She also demonstrated a positive attitude towards CRM software and suggested potential opportunities for growth within the company."
+}

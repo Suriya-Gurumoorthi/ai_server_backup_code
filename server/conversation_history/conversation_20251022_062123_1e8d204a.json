@@ -1,0 +1,14 @@
+{
+  "session_id": "1e8d204a-cd52-46dc-b1b2-26f57030a405",
+  "connection_id": "debc09e8-c6ed-4d8a-812c-c205bb658327",
+  "created_at": "20251022_062123",
+  "last_updated": "2025-10-22 06:21:23",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-22 06:21:23",
+      "type": "ai"
+    }
+  ],
+  "summary": "**Summary:**\n\n* The candidate is a Business Development Manager with experience in sales and marketing.\n* The recruiter, Alexa, asked about their background and qualifications.\n* The candidate provided general information about their job responsibilities and industry experience.\n* Alexa mentioned that there was another candidate who had similar skills and experience, but not quite a fit.\n* The candidate expressed interest in the role and thought it would be a great opportunity.\n* Alexa stated that they still planned to move forward with contacting the other candidate.\n\n**CRM Notes:**\n\n* Name: John Doe (Business Development Manager)\n* Background: Sales and Marketing experience\n* Key Details:\n\t+ Strong sales performance\n\t+ Experience with CRM systems\n* Interviewer Remarks:\n\t+ Mentioned alternative candidate\n* Outcome: Still planning to contact the other candidate\n* Candidate's Interest/Fit: Willingness to consider the role and company."
+}

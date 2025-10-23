@@ -1,0 +1,14 @@
+{
+  "session_id": "bb125528-e085-495c-880b-6615145fc50e",
+  "connection_id": "24d59bc2-86ea-4dca-b48e-506e430c2a64",
+  "created_at": "20251022_114528",
+  "last_updated": "2025-10-22 11:45:28",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-22 11:45:28",
+      "type": "ai"
+    }
+  ],
+  "summary": "Summary:\n\n* The candidate was introduced by a Newell (not Novel) office.\n* They were asked if the call was convenient to schedule.\n* The candidate discussed their background as a Business Development Manager with a previous company.\n* Key points mentioned:\n\t+ The candidate has experience working with clients in various industries.\n\t+ Their role involves business development strategies and account management.\n* Interviewer remarks included feedback on the candidate's communication skills and industry knowledge.\n* Outcome: No job offer was extended during the conversation.\n* Outcome: The candidate expressed interest in exploring other opportunities at Newell or similar companies."
+}

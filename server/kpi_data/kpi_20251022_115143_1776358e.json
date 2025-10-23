@@ -1,0 +1,91 @@
+{
+  "kpi_session_id": "1776358e-ec0a-49dc-84b8-e6565a8f2dfc",
+  "connection_id": "24d4ed07-aec8-4ca6-b7f0-5570ca785475",
+  "linked_session_id": "f77bb916-4ca5-4145-84ac-c4e64150e64d",
+  "created_at": "20251022_115143",
+  "call_start_time": "2025-10-22 11:51:43",
+  "last_updated": "2025-10-22 11:53:24",
+  "kpi_status": {
+    "introduction": false,
+    "name_asked": true,
+    "experience_asked": true,
+    "relevant_experience_asked": true,
+    "expected_ctc_asked": true,
+    "current_ctc_asked": true,
+    "notice_period_asked": true,
+    "location_asked": true,
+    "skills_asked": true
+  },
+  "extracted_data": {
+    "name": "Unknown Company Name",
+    "experience_years": "3",
+    "relevant_experience": "three years of experience.",
+    "expected_ctc": "null",
+    "current_ctc": "null",
+    "notice_period": "null",
+    "location": "Bengaluru",
+    "skills": [
+      "Business Development",
+      "Sales Strategy",
+      "Account Management"
+    ]
+  },
+  "conversation_flow": [
+    {
+      "timestamp": "2025-10-22 11:52:02",
+      "user_input": " Yes, this is the good time to talk continue",
+      "ai_response": "So, could you tell me a little bit about yourself? What brings you to our list, and what do you think makes you a great fit for a Business Development Manager role here at Novel Office?",
+      "extracted_kpi": {
+        "name": null,
+        "experience_years": null,
+        "relevant_experience": null,
+        "expected_ctc": null,
+        "current_ctc": null,
+        "notice_period": null,
+        "location": "New York",
+        "skills": [
+          "Business Development",
+          "Sales Strategy",
+          "Account Management"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-10-22 11:52:19",
+      "user_input": " Before that let me introduce myself, I am Surya.",
+      "ai_response": "Hi Surya, nice to meet you! Thank you so much for sharing that - how did you find our job description, and what sparked your interest in becoming a Business Development Manager at Novel Office?",
+      "extracted_kpi": {
+        "name": "Surya"
+      }
+    },
+    {
+      "timestamp": "2025-10-22 11:52:51",
+      "user_input": " some other changes to the company here that's why I am changing it",
+      "ai_response": "It seems like we've got some changes coming in. Can you please go ahead and tell me more about those. How has the company evolved since its inception, and what changes have been made recently that might impact your application, such as hiring new team members or updating their roles?",
+      "extracted_kpi": {
+        "name": "Unknown Company Name",
+        "experience_years": null,
+        "relevant_experience": null,
+        "expected_ctc": null,
+        "current_ctc": null,
+        "notice_period": null,
+        "location": null,
+        "skills": []
+      }
+    },
+    {
+      "timestamp": "2025-10-22 11:53:19",
+      "user_input": " Now that's not an issue, the main thing that I would like to say is I have three years of experience.",
+      "ai_response": "We appreciate your concise introduction, Surya. So, to recap, you have three years of experience in business development and looking to join Novel Office. That's helpful information. Where in Bengaluru would you be based if you were to move to Bangalore from wherever you're currently located?",
+      "extracted_kpi": {
+        "name": "",
+        "experience_years": "3",
+        "relevant_experience": "three years of experience.",
+        "expected_ctc": "null",
+        "current_ctc": "null",
+        "notice_period": "null",
+        "location": "Bengaluru"
+      }
+    }
+  ]
+}

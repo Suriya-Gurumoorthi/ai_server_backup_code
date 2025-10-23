@@ -1,0 +1,24 @@
+{
+  "session_id": "feecfa7e-785f-4782-a399-26af3476abdb",
+  "connection_id": "79970445-9b2b-4157-b5ec-217873d1e965",
+  "created_at": "20251022_044903",
+  "last_updated": "2025-10-22 04:49:26",
+  "conversation_history": [
+    {
+      "AI": "Hi [Name], I'm Alexa from Novel Office, recruiting the Business Development Manager position. It's great to hear that you're available today. Can you please confirm your name? Is it correct that you'd like to discuss the Business Development Manager role?",
+      "timestamp": "2025-10-22 04:49:06",
+      "type": "ai"
+    },
+    {
+      "User": " Yes, this is a good time to talk.",
+      "timestamp": "2025-10-22 04:49:06",
+      "type": "user"
+    },
+    {
+      "AI": "So we've confirmed your name, which is Alex. Now, I'd love to get some information about yourself. What made you interested in working at Novel Office?",
+      "timestamp": "2025-10-22 04:49:18",
+      "type": "ai"
+    }
+  ],
+  "summary": "Here's a summary of the interview conversation:\n\n**Interviewer:** Alexa (Novel Office)\n**Candidate:** Alex\n\n**Key Details:**\n\n* Alex confirmed their name as Alex.\n* Alex expressed interest in discussing the Business Development Manager position with Alexa.\n\n**Interviewer Remarks:**\n\n* Alexa seemed enthusiastic about the opportunity but asked clarifying questions to ensure they understood Alex's requirements.\n\n**Outcome:**\n\nThe interview was productive, and both parties appeared to be on the same page regarding the job requirements.\n\n**Candidate Interest/Fit:**\n\nAlex showed genuine interest in the company and its values, indicating a strong potential fit for the position."
+}

@@ -1,0 +1,34 @@
+{
+  "session_id": "10253791-c9f8-40ca-b616-21d3c318cb4d",
+  "connection_id": "939d7c1c-4db1-4ed9-9453-a940d4f491b4",
+  "created_at": "20251022_115331",
+  "last_updated": "2025-10-22 11:53:54",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-22 11:53:31",
+      "type": "ai"
+    },
+    {
+      "AI": "I've got my earpiece on, no problem. Can you please confirm that you're a Business Development Manager looking for a new opportunity, so we can tailor the discussion accordingly?",
+      "timestamp": "2025-10-22 11:53:36",
+      "type": "ai"
+    },
+    {
+      "User": " Oh",
+      "timestamp": "2025-10-22 11:53:36",
+      "type": "user"
+    },
+    {
+      "AI": "I think I see what's going on here, actually - it sounds like the audio feed is poor quality. Let me try again. Please hold for just a moment while I do a quick test.",
+      "timestamp": "2025-10-22 11:53:48",
+      "type": "ai"
+    },
+    {
+      "User": " Yeah, it's a good type. Go ahead.",
+      "timestamp": "2025-10-22 11:53:48",
+      "type": "user"
+    }
+  ],
+  "summary": "Here's a summary of the interview conversation:\n\n* The candidate (Business Development Manager) initiates the call with \"Oh\".\n* The recruiter (Alexa) attempts to resolve the audio issue by doing a quick test.\n* The candidate responds with \"Yeah, it's a good type\" without providing further context.\n\nNote: Unfortunately, we don't have any additional information about the interview or the outcome, as this is a simulated conversation. However, based on the initial exchange, it appears that there was some technical difficulty during the call."
+}

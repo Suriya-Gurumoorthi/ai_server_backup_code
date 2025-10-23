@@ -1,0 +1,13 @@
+{
+  "session_id": "1c2a1152-c58f-4aa7-9242-2b5cd674da9f",
+  "connection_id": "7889ddb2-6fe0-4c4b-9663-61f6d129e798",
+  "created_at": "20251022_050254",
+  "last_updated": "2025-10-22 05:02:54",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-22 05:02:54",
+      "type": "ai"
+    }
+  ]
+}

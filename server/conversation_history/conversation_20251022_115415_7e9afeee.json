@@ -1,0 +1,14 @@
+{
+  "session_id": "7e9afeee-0716-4bdf-af6b-880094bd7c11",
+  "connection_id": "1abe3c9f-438c-47f5-9372-d863bfd24c4b",
+  "created_at": "20251022_115415",
+  "last_updated": "2025-10-22 11:54:15",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-22 11:54:15",
+      "type": "ai"
+    }
+  ],
+  "summary": "Here is a summary of the interview conversation:\n\n**Candidate Information**\n\n* Name: Unknown (to be determined)\n* Background: Business Development Manager\n\n**Interview Summary**\n\nAlexa, an HR recruiter from Novel Office, called the unknown Business Development Manager applicant.\n\n**Key Details**\n\n* The candidate's background was not provided.\n* The interview was scheduled as part of a CRM note.\n\n**Interviewer Remarks**\n\nNone mentioned in the initial call.\n\n**Outcome**\n\nThe interview concluded without further discussion on how the candidate performed or whether they were a good fit for the role.\n\n**Candidate Interest/Fit**\n\nAs per the CRM notes, it appears that the candidate may have been interested in the position due to their experience as a Business Development Manager, although more information about their background would be needed to determine if they fit the specific requirements of the job."
+}

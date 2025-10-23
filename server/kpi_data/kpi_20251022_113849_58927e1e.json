@@ -1,0 +1,43 @@
+{
+  "kpi_session_id": "58927e1e-f4b0-4a9c-a2f2-5a7208f85a84",
+  "connection_id": "test_connection_simple",
+  "linked_session_id": "test_session_simple",
+  "created_at": "20251022_113849",
+  "call_start_time": "2025-10-22 11:38:49",
+  "last_updated": "2025-10-22 11:38:49",
+  "kpi_status": {
+    "introduction": false,
+    "name_asked": true,
+    "experience_asked": true,
+    "relevant_experience_asked": false,
+    "expected_ctc_asked": true,
+    "current_ctc_asked": true,
+    "notice_period_asked": true,
+    "location_asked": true,
+    "skills_asked": true
+  },
+  "extracted_data": {
+    "name": "John Smith",
+    "experience_years": 5,
+    "relevant_experience": null,
+    "expected_ctc": 1200000,
+    "current_ctc": 800000,
+    "notice_period": "30 days",
+    "location": "Bangalore",
+    "skills": [
+      "CRM",
+      "Sales",
+      "Client Management"
+    ]
+  },
+  "conversation_flow": [
+    {
+      "timestamp": "2025-10-22 11:38:49",
+      "user_input": "Hello, my name is John Smith",
+      "ai_response": "Nice to meet you John!",
+      "extracted_kpi": {
+        "name": "John Smith"
+      }
+    }
+  ]
+}

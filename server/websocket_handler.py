@@ -66,6 +66,17 @@ class WebSocketHandler:
                 self.logger.info(f"Greeting already sent for connection {connection_id}")
                 return
             
+            # CRITICAL FIX: Create session BEFORE sending greeting to ensure it's stored in history
+            if not connection.get("session_created", False):
+                session_id = transcription_manager.create_session(connection_id)
+                connection["session_id"] = session_id
+                connection["session_created"] = True
+                
+                # Create prompt logging session
+                prompt_logger.create_session(connection_id, session_id)
+                
+                self.logger.info(f"Created session {session_id} for connection {connection_id} for greeting storage")
+            
             self.logger.info(f"🎤 Sending static greeting to {client_address}: {STATIC_GREETING_MESSAGE}")
             
             # Generate TTS audio for the greeting message
@@ -83,10 +94,9 @@ class WebSocketHandler:
             # Mark greeting as sent
             connection["greeting_sent"] = True
             
-            # Add greeting to conversation history if session exists
-            if connection.get("session_created", False):
-                transcription_manager.add_ai_transcription(connection_id, STATIC_GREETING_MESSAGE)
-                self.logger.info(f"Added greeting to conversation history for {connection_id}")
+            # CRITICAL FIX: Always add greeting to conversation history since session is now created
+            transcription_manager.add_ai_transcription(connection_id, STATIC_GREETING_MESSAGE)
+            self.logger.info(f"✅ Added greeting to conversation history for {connection_id}")
             
         except Exception as e:
             self.logger.error(f"Error sending static greeting to {client_address}: {e}")
@@ -98,18 +108,20 @@ class WebSocketHandler:
         if not connection:
             return False
         
-        if not connection.get("session_created", False):
-            # Create session only when first conversation message is received
-            session_id = transcription_manager.create_session(connection_id)
-            connection["session_id"] = session_id
-            connection["session_created"] = True
-            
-            # Create prompt logging session
-            prompt_logger.create_session(connection_id, session_id)
-            
-            self.logger.info(f"Created session {session_id} for connection {connection_id} on first message")
+        # Check if session already exists (created during greeting or previous message)
+        if connection.get("session_created", False):
+            self.logger.info(f"Session already exists for connection {connection_id}")
             return True
         
+        # Create session only if it doesn't exist yet
+        session_id = transcription_manager.create_session(connection_id)
+        connection["session_id"] = session_id
+        connection["session_created"] = True
+        
+        # Create prompt logging session
+        prompt_logger.create_session(connection_id, session_id)
+        
+        self.logger.info(f"Created session {session_id} for connection {connection_id} on first message")
         return True
     
     async def handle_connection(self, websocket):

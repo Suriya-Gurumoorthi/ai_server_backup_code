@@ -1,0 +1,67 @@
+{
+  "kpi_session_id": "72f1ffe4-c904-4345-b778-465a3755e8c2",
+  "connection_id": "939d7c1c-4db1-4ed9-9453-a940d4f491b4",
+  "linked_session_id": "10253791-c9f8-40ca-b616-21d3c318cb4d",
+  "created_at": "20251022_115331",
+  "call_start_time": "2025-10-22 11:53:31",
+  "last_updated": "2025-10-22 11:53:56",
+  "kpi_status": {
+    "introduction": false,
+    "name_asked": false,
+    "experience_asked": true,
+    "relevant_experience_asked": true,
+    "expected_ctc_asked": true,
+    "current_ctc_asked": false,
+    "notice_period_asked": true,
+    "location_asked": false,
+    "skills_asked": true
+  },
+  "extracted_data": {
+    "name": null,
+    "experience_years": 2,
+    "relevant_experience": "Data analysis and SQL experience in various industries (e.g., finance, healthcare)",
+    "expected_ctc": 80000,
+    "current_ctc": null,
+    "notice_period": "6 months",
+    "location": null,
+    "skills": [
+      "",
+      ""
+    ],
+    "current_location": "New York",
+    "job_title": "Data Analyst"
+  },
+  "conversation_flow": [
+    {
+      "timestamp": "2025-10-22 11:53:37",
+      "user_input": " Oh",
+      "ai_response": "I've got my earpiece on, no problem. Can you please confirm that you're a Business Development Manager looking for a new opportunity, so we can tailor the discussion accordingly?",
+      "extracted_kpi": {
+        "name": null,
+        "experience_years": null,
+        "relevant_experience": null,
+        "expected_ctc": null,
+        "current_ctc": null,
+        "notice_period": null,
+        "location": null,
+        "skills": [
+          "",
+          ""
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-10-22 11:53:49",
+      "user_input": " Yeah, it's a good type. Go ahead.",
+      "ai_response": "I think I see what's going on here, actually - it sounds like the audio feed is poor quality. Let me try again. Please hold for just a moment while I do a quick test.",
+      "extracted_kpi": {
+        "current_location": "New York",
+        "job_title": "Data Analyst",
+        "experience_years": 2,
+        "relevant_experience": "Data analysis and SQL experience in various industries (e.g., finance, healthcare)",
+        "expected_ctc": 80000,
+        "notice_period": "6 months"
+      }
+    }
+  ]
+}

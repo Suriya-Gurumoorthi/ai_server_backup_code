@@ -1,0 +1,43 @@
+{
+  "session_id": "76705803-bf03-4fd7-b827-68cb6e0e1e39",
+  "connection_id": "e36111f1-1067-4766-8e58-341b56898da9",
+  "created_at": "20251022_042355",
+  "last_updated": "2025-10-22 04:25:39",
+  "conversation_history": [
+    {
+      "AI": "Hello? You've got some audio on your end. Can I help you with anything else?",
+      "timestamp": "2025-10-22 04:24:10",
+      "type": "ai"
+    },
+    {
+      "AI": "How are you doing today? Is everything okay?",
+      "timestamp": "2025-10-22 04:24:50",
+      "type": "ai"
+    },
+    {
+      "User": " Hello.",
+      "timestamp": "2025-10-22 04:24:53",
+      "type": "user"
+    },
+    {
+      "AI": "I'm a bit busy now. Sorry about that. Can we get back to our conversation about the Business Development Manager position at Novel Office? I want to make sure I understand you correctly - would you like to chat more about the job and what drew you to it?",
+      "timestamp": "2025-10-22 04:25:14",
+      "type": "ai"
+    },
+    {
+      "User": " Hello, can you hear me?",
+      "timestamp": "2025-10-22 04:25:16",
+      "type": "user"
+    },
+    {
+      "AI": "It sounds like you're just having a brief moment of silence. Let me get us back on track. So, you'd like to talk more about the Business Development Manager role, correct?",
+      "timestamp": "2025-10-22 04:25:35",
+      "type": "ai"
+    },
+    {
+      "User": " Everything is okay from my side.",
+      "timestamp": "2025-10-22 04:25:39",
+      "type": "user"
+    }
+  ]
+}
