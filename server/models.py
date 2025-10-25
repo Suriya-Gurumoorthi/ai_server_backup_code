@@ -26,7 +26,7 @@ except ImportError as e:
 
 from config import (
     DEVICE, ULTRAVOX_MODEL, PIPER_MODEL_NAME, PIPER_ONNX_FILE, 
-    PIPER_JSON_FILE, MAX_WORKERS, THREAD_NAME_PREFIX
+    PIPER_JSON_FILE, MAX_WORKERS, THREAD_NAME_PREFIX, WHISPER_LANGUAGE, WHISPER_TASK
 )
 from prompt_logger import prompt_logger
 
@@ -561,9 +561,18 @@ class ModelManager:
             # Move input features to the same device as the model
             input_features = input_features.to(DEVICE)
             
-            # Generate transcription
+            # Generate transcription with English-only language setting
             with torch.no_grad():  # Save memory
-                predicted_ids = self.whisper_model.generate(input_features, max_length=448)
+                # Force English language transcription
+                forced_decoder_ids = self.whisper_processor.get_decoder_prompt_ids(
+                    language=WHISPER_LANGUAGE, 
+                    task=WHISPER_TASK
+                )
+                predicted_ids = self.whisper_model.generate(
+                    input_features, 
+                    max_length=448,
+                    forced_decoder_ids=forced_decoder_ids
+                )
             
             # Decode to text
             transcription = self.whisper_processor.batch_decode(predicted_ids, skip_special_tokens=True)

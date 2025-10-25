@@ -1,0 +1,24 @@
+{
+  "session_id": "5d10fe50-733e-407a-a69b-7e09012eb0b3",
+  "connection_id": "0a1f517a-eecc-4aad-8585-3c1ffe92a265",
+  "created_at": "20251023_084841",
+  "last_updated": "2025-10-23 08:49:01",
+  "conversation_history": [
+    {
+      "AI": "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?",
+      "timestamp": "2025-10-23 08:48:41",
+      "type": "ai"
+    },
+    {
+      "AI": "I need to confirm that it's a good time for us to chat. Would you like me to reschedule our call if we're running behind? Can you tell me what brings you here today?",
+      "timestamp": "2025-10-23 08:48:57",
+      "type": "ai"
+    },
+    {
+      "User": " Yes, this is local.",
+      "timestamp": "2025-10-23 08:48:57",
+      "type": "user"
+    }
+  ],
+  "summary": "**Summary**\n\n* Recruit: Alexa, an HR recruiter from Novel Office, called Business Development Manager applicant.\n* Applicant (candidate): Answered questions about herself, including her background and experience as a Business Development Manager.\n* Interviewer: Alexa asked about the purpose of the call, whether to reschedule other meetings, and any personal reasons why they wanted to speak with the applicant.\n\n**Key Details**\n\n* Background: Candidate had experience as a Business Development Manager.\n* Interest/Fit: The candidate expressed interest in considering the role and was open to discussing further.\n\n**Outcome**\n\nThe interview appeared to be productive and informative for both parties, but no final decision has been made yet. Alex asked follow-up questions to gather more information before making a decision."
+}

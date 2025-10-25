@@ -16,13 +16,16 @@ from config import (
     TRANSCRIPTION_MIN_ENERGY, TRANSCRIPTION_MIN_SPEECH_RATIO,
     TRANSCRIPTION_FALSE_POSITIVES, TRANSCRIPTION_FALSE_POSITIVE_MAX_LENGTH,
     UNIFIED_AUDIO_VALIDATION, UNIFIED_MIN_ENERGY, UNIFIED_MIN_SPEECH_RATIO,
-    STATIC_GREETING_ENABLED, STATIC_GREETING_MESSAGE
+    STATIC_GREETING_ENABLED, STATIC_GREETING_MESSAGE,
+    VAD_ENABLED, VAD_BACKGROUND_MONITORING_ENABLED, VAD_INTERRUPTION_COOLDOWN_MS,
+    VAD_TEMPORAL_CONSISTENCY_FRAMES, VAD_DEBUG_LOGGING, TTS_SAMPLE_RATE
 )
 from utils import safe_send_response, get_connection_info, should_transcribe_audio, unified_audio_validation
 from models import model_manager
 from audio_processor import audio_processor
 from transcription_manager import transcription_manager
 from prompt_logger import prompt_logger
+from vad_manager import vad_manager
 
 
 class WebSocketHandler:
@@ -83,8 +86,8 @@ class WebSocketHandler:
             greeting_audio = await audio_processor.generate_tts_audio(STATIC_GREETING_MESSAGE)
             
             if greeting_audio:
-                # Send the greeting audio directly to the client
-                await websocket.send(greeting_audio)
+                # Use the new audio management system for greeting
+                await self._send_audio_response(connection_id, greeting_audio, STATIC_GREETING_MESSAGE)
                 self.logger.info(f"✅ Static greeting audio sent to {client_address} ({len(greeting_audio)} bytes)")
             else:
                 # Fallback: send text response if TTS fails
@@ -140,7 +143,17 @@ class WebSocketHandler:
                 "pending_request_type": None,
                 "session_id": None,  # Will be set when first message is processed
                 "session_created": False,  # Track if session has been created
-                "greeting_sent": False  # Track if static greeting has been sent
+                "greeting_sent": False,  # Track if static greeting has been sent
+                # VAD interruption detection state
+                "ai_speaking": False,  # Track if AI is currently speaking
+                "interruption_detected": False,  # Track if interruption was detected
+                "last_interruption_time": 0,  # Timestamp of last interruption (for cooldown)
+                "vad_monitoring_task": None,  # Background VAD monitoring task
+                "audio_buffer": [],  # Buffer for incoming audio during AI speech
+                # Audio playback management
+                "current_audio_task": None,  # Track current audio playback task
+                "audio_playback_active": False,  # Track if audio is currently playing
+                "pending_audio_response": None  # Store pending audio response to replace current one
             }
             
             self.logger.info(f"✅ Client {client_address} connected with ID: {connection_id}")
@@ -169,6 +182,10 @@ class WebSocketHandler:
             # Clean up connection state and end transcription session
             if connection_id in self.active_connections:
                 connection = self.active_connections[connection_id]
+                
+                # Cancel all audio-related tasks
+                await self._cancel_current_audio_playback(connection_id)
+                
                 # Only end session if it was actually created
                 if connection.get("session_created", False):
                     await transcription_manager.end_session(connection_id)
@@ -272,12 +289,14 @@ class WebSocketHandler:
             
             self.logger.info(f"[ULTRAVOX] AI Response: {response_text[:100]}...")
             
-            # Generate TTS
+            # Generate TTS with proper audio management
             tts_audio = await audio_processor.generate_tts_audio(response_text)
             
             if tts_audio:
-                await websocket.send(tts_audio)
+                # Use the new audio management system
+                await self._send_audio_response(connection_id, tts_audio, response_text)
             else:
+                # Fallback to text response if TTS fails
                 await safe_send_response(websocket, response_text, client_address)
             
             # Add AI response to history ONLY if it's valid and not a marker
@@ -520,15 +539,303 @@ class WebSocketHandler:
         
         transcription_manager.add_ai_transcription(connection_id, response_text)
         
-        # Generate TTS audio
+        # Generate TTS audio with proper management
         self.logger.info(f"Generating TTS audio for {client_address}")
         tts_audio = await audio_processor.generate_tts_audio(response_text)
         
         if tts_audio:
-            await websocket.send(tts_audio)
+            # Use the new audio management system
+            await self._send_audio_response(connection_id, tts_audio, response_text)
             self.logger.info(f"Successfully sent TTS audio to {client_address}")
         else:
             await safe_send_response(websocket, response_text, client_address)
+    
+    async def _monitor_for_interruption(self, connection_id: str, websocket):
+        """
+        Monitor for user speech during AI TTS playback using VAD.
+        
+        Args:
+            connection_id: Connection identifier
+            websocket: WebSocket connection
+        """
+        connection = self.active_connections.get(connection_id)
+        if not connection:
+            self.logger.error(f"Connection {connection_id} not found for VAD monitoring")
+            return
+        
+        client_address = connection["client_address"]
+        self.logger.info(f"Starting VAD monitoring for {client_address}")
+        
+        try:
+            audio_chunks = []
+            consecutive_speech_frames = 0
+            last_interruption_time = connection.get("last_interruption_time", 0)
+            
+            while connection.get("ai_speaking", False) and not connection.get("interruption_detected", False):
+                try:
+                    # Wait for incoming audio with short timeout
+                    audio_chunk = await asyncio.wait_for(websocket.recv(), timeout=0.1)
+                    
+                    if isinstance(audio_chunk, bytes):
+                        # Buffer audio chunk for VAD analysis
+                        audio_chunks.append(audio_chunk)
+                        connection["audio_buffer"].append(audio_chunk)
+                        
+                        # Keep only recent chunks to avoid memory buildup
+                        if len(audio_chunks) > 10:  # Keep last 10 chunks (~300ms)
+                            audio_chunks.pop(0)
+                        
+                        # Check for speech with temporal consistency
+                        if len(audio_chunks) >= VAD_TEMPORAL_CONSISTENCY_FRAMES:
+                            is_speech, avg_prob = vad_manager.detect_speech_with_temporal_consistency(
+                                audio_chunks[-VAD_TEMPORAL_CONSISTENCY_FRAMES:],
+                                VAD_TEMPORAL_CONSISTENCY_FRAMES
+                            )
+                            
+                            if VAD_DEBUG_LOGGING:
+                                self.logger.debug(f"VAD analysis: is_speech={is_speech}, avg_prob={avg_prob:.3f}")
+                            
+                            if is_speech:
+                                # Check cooldown period
+                                current_time = asyncio.get_event_loop().time() * 1000  # Convert to ms
+                                time_since_last = current_time - last_interruption_time
+                                
+                                if time_since_last >= VAD_INTERRUPTION_COOLDOWN_MS:
+                                    self.logger.info(f"🚨 Interruption detected for {client_address} (prob={avg_prob:.3f})")
+                                    
+                                    # Trigger interruption
+                                    await self._trigger_interruption(connection_id, websocket)
+                                    break
+                                else:
+                                    if VAD_DEBUG_LOGGING:
+                                        self.logger.debug(f"Interruption ignored due to cooldown: {time_since_last:.0f}ms < {VAD_INTERRUPTION_COOLDOWN_MS}ms")
+                            else:
+                                consecutive_speech_frames = 0
+                    
+                except asyncio.TimeoutError:
+                    # No audio received, continue monitoring
+                    continue
+                except websockets.ConnectionClosed:
+                    self.logger.info(f"Connection closed during VAD monitoring for {client_address}")
+                    break
+                except Exception as e:
+                    self.logger.error(f"Error in VAD monitoring for {client_address}: {e}")
+                    break
+        
+        except asyncio.CancelledError:
+            self.logger.info(f"VAD monitoring cancelled for {client_address}")
+        except Exception as e:
+            self.logger.error(f"Unexpected error in VAD monitoring for {client_address}: {e}")
+        finally:
+            self.logger.info(f"VAD monitoring ended for {client_address}")
+    
+    async def _trigger_interruption(self, connection_id: str, websocket):
+        """
+        Handle interruption detection by stopping AI speech and processing user input.
+        
+        Args:
+            connection_id: Connection identifier
+            websocket: WebSocket connection
+        """
+        connection = self.active_connections.get(connection_id)
+        if not connection:
+            return
+        
+        client_address = connection["client_address"]
+        self.logger.info(f"🚨 Triggering interruption for {client_address}")
+        
+        # Mark interruption detected
+        connection["interruption_detected"] = True
+        connection["ai_speaking"] = False
+        connection["last_interruption_time"] = asyncio.get_event_loop().time() * 1000
+        
+        # Cancel TTS generation
+        if audio_processor.is_tts_active(connection_id):
+            audio_processor.cancel_tts(connection_id)
+            self.logger.info(f"Cancelled TTS generation for {client_address}")
+        
+        # Process buffered audio if available
+        if connection["audio_buffer"]:
+            self.logger.info(f"Processing {len(connection['audio_buffer'])} buffered audio chunks for {client_address}")
+            
+            # Combine buffered audio chunks
+            combined_audio = b''.join(connection["audio_buffer"])
+            
+            # Clear buffer
+            connection["audio_buffer"] = []
+            
+            # Process the interrupted audio as user input
+            await self._handle_audio_message(connection, combined_audio)
+    
+    def _should_process_audio_with_vad(self, audio_bytes: bytes) -> bool:
+        """
+        Enhanced audio validation that combines existing validation with VAD.
+        
+        Args:
+            audio_bytes: Raw audio data
+            
+        Returns:
+            bool: True if audio should be processed
+        """
+        # First apply existing validation
+        if not self._should_process_audio(audio_bytes):
+            return False
+        
+        # If VAD is enabled, also check for speech presence
+        if VAD_ENABLED and vad_manager.is_vad_available():
+            is_speech = vad_manager.is_speech_present(audio_bytes)
+            if VAD_DEBUG_LOGGING:
+                speech_prob = vad_manager.detect_speech(audio_bytes)
+                self.logger.debug(f"VAD validation: is_speech={is_speech}, prob={speech_prob:.3f}")
+            return is_speech
+        
+        return True
+    
+    async def _cancel_current_audio_playback(self, connection_id: str) -> bool:
+        """
+        Cancel any current audio playback for a connection.
+        
+        Args:
+            connection_id: Connection identifier
+            
+        Returns:
+            bool: True if audio was cancelled, False if no audio was playing
+        """
+        connection = self.active_connections.get(connection_id)
+        if not connection:
+            return False
+        
+        cancelled = False
+        
+        # Cancel current audio task if active
+        if connection.get("current_audio_task"):
+            self.logger.info(f"Cancelling current audio task for connection {connection_id}")
+            connection["current_audio_task"].cancel()
+            try:
+                await connection["current_audio_task"]
+            except asyncio.CancelledError:
+                pass
+            connection["current_audio_task"] = None
+            cancelled = True
+        
+        # Cancel TTS generation if active
+        if audio_processor.is_tts_active(connection_id):
+            self.logger.info(f"Cancelling TTS generation for connection {connection_id}")
+            audio_processor.cancel_tts(connection_id)
+            cancelled = True
+        
+        # Reset audio playback state
+        connection["audio_playback_active"] = False
+        connection["ai_speaking"] = False
+        
+        # Cancel VAD monitoring if active
+        if connection.get("vad_monitoring_task"):
+            self.logger.info(f"Cancelling VAD monitoring for connection {connection_id}")
+            connection["vad_monitoring_task"].cancel()
+            try:
+                await connection["vad_monitoring_task"]
+            except asyncio.CancelledError:
+                pass
+            connection["vad_monitoring_task"] = None
+        
+        if cancelled:
+            self.logger.info(f"✅ Successfully cancelled audio playback for connection {connection_id}")
+        
+        return cancelled
+    
+    async def _send_audio_response(self, connection_id: str, tts_audio: bytes, response_text: str) -> bool:
+        """
+        Send audio response with proper playback management.
+        Cancels any existing audio and ensures only the most recent response plays.
+        
+        Args:
+            connection_id: Connection identifier
+            tts_audio: Generated TTS audio bytes
+            response_text: Text response for logging
+            
+        Returns:
+            bool: True if audio was sent successfully
+        """
+        connection = self.active_connections.get(connection_id)
+        if not connection:
+            self.logger.error(f"Connection {connection_id} not found for audio response")
+            return False
+        
+        websocket = connection["websocket"]
+        client_address = connection["client_address"]
+        
+        try:
+            # Cancel any existing audio playback
+            await self._cancel_current_audio_playback(connection_id)
+            
+            # Mark as new audio playback
+            connection["audio_playback_active"] = True
+            connection["ai_speaking"] = True
+            
+            # Create audio playback task
+            async def audio_playback_task():
+                try:
+                    # Send TTS audio
+                    await websocket.send(tts_audio)
+                    self.logger.info(f"✅ Sent TTS audio to {client_address} ({len(tts_audio)} bytes)")
+                    
+                    # Wait for audio to complete (estimate duration)
+                    # This is a rough estimate - in a real implementation you might want to track actual playback
+                    estimated_duration = len(tts_audio) / (TTS_SAMPLE_RATE * 2)  # Rough estimate
+                    await asyncio.sleep(estimated_duration)
+                    
+                except asyncio.CancelledError:
+                    self.logger.info(f"Audio playback cancelled for {client_address}")
+                    raise
+                except Exception as e:
+                    self.logger.error(f"Error during audio playback for {client_address}: {e}")
+                finally:
+                    # Reset audio state
+                    connection["audio_playback_active"] = False
+                    connection["ai_speaking"] = False
+                    connection["current_audio_task"] = None
+            
+            # Start audio playback task
+            audio_task = asyncio.create_task(audio_playback_task())
+            connection["current_audio_task"] = audio_task
+            
+            # Start VAD monitoring if enabled
+            if VAD_ENABLED and VAD_BACKGROUND_MONITORING_ENABLED:
+                vad_task = asyncio.create_task(
+                    self._monitor_for_interruption(connection_id, websocket)
+                )
+                connection["vad_monitoring_task"] = vad_task
+                
+                # Wait for either audio completion or interruption
+                try:
+                    await asyncio.gather(audio_task, vad_task, return_exceptions=True)
+                except Exception as e:
+                    self.logger.error(f"Error in audio playback or VAD monitoring: {e}")
+                finally:
+                    # Clean up tasks
+                    if connection.get("vad_monitoring_task"):
+                        connection["vad_monitoring_task"].cancel()
+                        try:
+                            await connection["vad_monitoring_task"]
+                        except asyncio.CancelledError:
+                            pass
+                        connection["vad_monitoring_task"] = None
+            else:
+                # No VAD monitoring, just wait for audio to complete
+                try:
+                    await audio_task
+                except asyncio.CancelledError:
+                    self.logger.info(f"Audio playback cancelled for {client_address}")
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error sending audio response to {client_address}: {e}")
+            # Reset state on error
+            connection["audio_playback_active"] = False
+            connection["ai_speaking"] = False
+            connection["current_audio_task"] = None
+            return False
 
 
 # Global WebSocket handler instance

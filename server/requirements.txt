@@ -3,11 +3,15 @@ asyncio
 websockets>=11.0.0
 transformers>=4.30.0
 torch>=2.0.0
+torchaudio>=2.0.0
 numpy>=1.24.0
 librosa>=0.10.0
 
 # Audio processing
 piper-tts>=1.2.0
+
+# VAD (Voice Activity Detection) dependencies
+# UltraVAD is loaded via transformers, requires transformers>=4.30.0
 
 # Additional utilities
 uuid

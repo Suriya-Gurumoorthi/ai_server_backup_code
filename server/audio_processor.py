@@ -7,7 +7,7 @@ import io
 import wave
 import logging
 import asyncio
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 try:
     from piper import PiperVoice
@@ -25,8 +25,9 @@ class AudioProcessor:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.active_tts_tasks: Dict[str, asyncio.Task] = {}  # Track active TTS tasks by connection_id
     
-    async def generate_tts_audio(self, text: str) -> Optional[bytes]:
+    async def generate_tts_audio(self, text: str, connection_id: str = None) -> Optional[bytes]:
         """Generate TTS audio from text using Piper."""
         if not model_manager.is_tts_available():
             self.logger.warning("TTS not available, cannot generate audio")
@@ -65,6 +66,111 @@ class AudioProcessor:
             import traceback
             self.logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
+    
+    async def generate_tts_audio_cancellable(self, text: str, connection_id: str) -> Optional[bytes]:
+        """
+        Generate TTS audio with cancellation support for interruption handling.
+        
+        Args:
+            text: Text to synthesize
+            connection_id: Connection identifier for task tracking
+            
+        Returns:
+            Generated audio bytes or None if cancelled/error
+        """
+        if not model_manager.is_tts_available():
+            self.logger.warning("TTS not available, cannot generate audio")
+            return None
+        
+        # Validate and clean input text
+        text = validate_text_for_tts(text)
+        if not text:
+            self.logger.warning("TTS text is empty or whitespace only. Skipping synthesis.")
+            return None
+        
+        # Cancel any existing TTS task for this connection
+        if connection_id in self.active_tts_tasks:
+            self.logger.info(f"Cancelling existing TTS task for connection {connection_id}")
+            self.active_tts_tasks[connection_id].cancel()
+            try:
+                await self.active_tts_tasks[connection_id]
+            except asyncio.CancelledError:
+                pass
+            del self.active_tts_tasks[connection_id]
+        
+        # Create new cancellable TTS task
+        tts_task = asyncio.create_task(self._generate_tts_async(text))
+        self.active_tts_tasks[connection_id] = tts_task
+        
+        try:
+            result = await tts_task
+            return result
+        except asyncio.CancelledError:
+            self.logger.info(f"TTS generation cancelled for connection {connection_id}")
+            return None
+        except Exception as e:
+            self.logger.error(f"Error in cancellable TTS generation: {e}")
+            return None
+        finally:
+            # Clean up task tracking
+            if connection_id in self.active_tts_tasks:
+                del self.active_tts_tasks[connection_id]
+    
+    async def _generate_tts_async(self, text: str) -> Optional[bytes]:
+        """Async wrapper for TTS generation."""
+        try:
+            # Generate audio using Piper TTS
+            audio_data = model_manager.piper_voice.synthesize(text)
+            
+            # Process audio chunks
+            audio_bytes = self._process_audio_chunks(audio_data)
+            if not audio_bytes:
+                return None
+            
+            # Convert to WAV format
+            wav_bytes = self._convert_to_wav(audio_bytes)
+            return wav_bytes
+            
+        except Exception as e:
+            self.logger.error(f"Error in async TTS generation: {e}")
+            return None
+    
+    def cancel_tts(self, connection_id: str) -> bool:
+        """
+        Cancel ongoing TTS generation for a specific connection.
+        
+        Args:
+            connection_id: Connection identifier
+            
+        Returns:
+            bool: True if task was cancelled, False if no active task
+        """
+        if connection_id in self.active_tts_tasks:
+            self.logger.info(f"Cancelling TTS task for connection {connection_id}")
+            self.active_tts_tasks[connection_id].cancel()
+            return True
+        return False
+    
+    def is_tts_active(self, connection_id: str) -> bool:
+        """
+        Check if TTS generation is active for a connection.
+        
+        Args:
+            connection_id: Connection identifier
+            
+        Returns:
+            bool: True if TTS is active
+        """
+        return connection_id in self.active_tts_tasks
+    
+    def is_tts_available(self) -> bool:
+        """
+        Check if TTS functionality is available.
+        
+        Returns:
+            bool: True if TTS is available
+        """
+        return model_manager.is_tts_available()
     
     def _process_audio_chunks(self, audio_data) -> Optional[bytes]:
         """Process audio chunks from Piper TTS output."""

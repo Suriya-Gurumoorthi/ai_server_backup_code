@@ -151,3 +151,37 @@ TRANSCRIPTION_MIN_SPEECH_RATIO = 0.35
 # Static greeting configuration
 STATIC_GREETING_ENABLED = True
 STATIC_GREETING_MESSAGE = "Hello, I'm Alexa, an HR recruiter from Novel Office calling Business Development Manager applicants. Is this a good time to talk?"
+
+# ==================== WHISPER CONFIGURATION ====================
+# Whisper model language settings
+
+# Force Whisper to transcribe only in English (disable auto-detection)
+WHISPER_LANGUAGE = "en"  # Set to "en" for English only, None for auto-detection
+WHISPER_TASK = "transcribe"  # "transcribe" or "translate"
+
+# ==================== VAD (Voice Activity Detection) Configuration ====================
+# UltraVAD configuration for interruption detection using transformers
+
+# Enable/disable VAD functionality
+VAD_ENABLED = False
+
+# VAD model configuration
+VAD_MODEL_NAME = "fixie-ai/ultraVAD"  # UltraVAD model from Hugging Face
+VAD_SAMPLE_RATE = 16000  # Must match audio processing sample rate
+
+# Speech detection thresholds
+VAD_THRESHOLD = 0.6  # Speech probability threshold (0.5-0.7 balanced)
+VAD_MIN_SPEECH_DURATION_MS = 300  # Minimum speech duration to trigger interruption
+VAD_SPEECH_PAD_MS = 100  # Padding before/after speech segments
+
+# Real-time processing configuration
+VAD_FRAME_SIZE_MS = 30  # VAD processing frame size (30/60/90ms for real-time)
+VAD_TEMPORAL_CONSISTENCY_FRAMES = 3  # Required consecutive speech frames for interruption
+
+# Interruption detection settings
+VAD_INTERRUPTION_COOLDOWN_MS = 500  # Minimum time between interruption detections
+VAD_BACKGROUND_MONITORING_ENABLED = True  # Monitor for speech during AI TTS playback
+
+# Debug and logging
+VAD_DEBUG_LOGGING = True  # Enable detailed VAD logging
+VAD_STATS_LOGGING = False  # Log audio statistics for debugging
